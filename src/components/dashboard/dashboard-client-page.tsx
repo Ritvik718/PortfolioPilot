@@ -24,7 +24,7 @@ type DashboardClientPageProps = {
     marketNews: MarketNews[];
 };
 
-type UserPortfolioData = {
+export type UserPortfolioData = {
     parsed: ParsePortfolioOutput;
     calculated: CalculatedInsights;
 }
@@ -37,86 +37,105 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
         setUserPortfolioData(data);
     };
 
+    const handleExport = () => {
+        if (!userPortfolioData) {
+            alert("Please analyze a portfolio first to export data.");
+            return;
+        }
+
+        const dataStr = JSON.stringify(userPortfolioData, null, 2);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+        const exportFileDefaultName = 'portfolio_analysis.json';
+
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    };
+
     const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
     
     const isLoading = userLoading;
 
     if (isLoading) {
         return (
-            <div className="grid gap-6">
-                <Skeleton className="h-[148px] w-full" />
-                <Skeleton className="h-[400px] w-full" />
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Skeleton className="h-[126px] w-full" />
-                    <Skeleton className="h-[126px] w-full" />
-                    <Skeleton className="h-[126px] w-full" />
-                </div>
-                <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                    <Skeleton className="h-[418px] xl:col-span-2" />
-                    <Skeleton className="h-[418px]" />
-                </div>
-                <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                    <Skeleton className="h-[500px] xl:col-span-2" />
-                     <Skeleton className="h-[500px]" />
+             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+                <div className="grid gap-6">
+                    <Skeleton className="h-[148px] w-full" />
+                    <Skeleton className="h-[400px] w-full" />
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        <Skeleton className="h-[126px] w-full" />
+                        <Skeleton className="h-[126px] w-full" />
+                        <Skeleton className="h-[126px] w-full" />
+                    </div>
+                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                        <Skeleton className="h-[418px] xl:col-span-2" />
+                        <Skeleton className="h-[418px]" />
+                    </div>
+                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                        <Skeleton className="h-[500px] xl:col-span-2" />
+                        <Skeleton className="h-[500px]" />
+                    </div>
                 </div>
             </div>
         )
     }
 
     return (
-        <div className="grid gap-6">
-            <MarketOverview quotes={marketData} />
-            <MarketNewsFeed news={marketNews} />
-            
-            <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
-                 <div className="flex flex-col gap-6">
-                    {portfolioHasData ? (
-                        <Card className="h-full flex flex-col items-center justify-center text-center p-8">
-                            <CardContent>
-                                <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
-                                <h2 className="text-2xl font-bold tracking-tight">
-                                    Your Portfolio is Analyzed
-                                </h2>
-                                <p className="text-muted-foreground">
-                                    You can now ask questions about your portfolio in the chat.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    ) : (
-                         <Card className="h-full flex flex-col items-center justify-center text-center p-8">
-                            <CardContent>
-                                <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
-                                <h2 className="text-2xl font-bold tracking-tight">
-                                    Analyze Your Portfolio
-                                </h2>
-                                <p className="text-muted-foreground">
-                                    Upload your portfolio data to see your personalized dashboard and get AI insights.
-                                </p>
-                            </CardContent>
-                        </Card>
-                    )}
-                </div>
-                <div className="flex flex-col gap-6">
-                     <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
-                     <PortfolioChat portfolioData={userPortfolioData} />
+        <>
+            <DashboardHeader onExport={handleExport} />
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+                <div className="grid gap-6">
+                    <MarketOverview quotes={marketData} />
+                    <MarketNewsFeed news={marketNews} />
+                    
+                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                        <div className="flex flex-col gap-6">
+                            {portfolioHasData ? (
+                                <Card className="h-full flex flex-col items-center justify-center text-center p-8">
+                                    <CardContent>
+                                        <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                                        <h2 className="text-2xl font-bold tracking-tight">
+                                            Your Portfolio is Analyzed
+                                        </h2>
+                                        <p className="text-muted-foreground">
+                                            You can now ask questions about your portfolio in the chat or export the data.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            ) : (
+                                <Card className="h-full flex flex-col items-center justify-center text-center p-8">
+                                    <CardContent>
+                                        <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                                        <h2 className="text-2xl font-bold tracking-tight">
+                                            Analyze Your Portfolio
+                                        </h2>
+                                        <p className="text-muted-foreground">
+                                            Upload your portfolio data to see your personalized dashboard and get AI insights.
+                                        </p>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
+                        <div className="flex flex-col gap-6">
+                            <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
+                            <PortfolioChat portfolioData={userPortfolioData} />
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 }
 
 
 export function DashboardClientPage(props: DashboardClientPageProps) {
     return (
-        <>
-            <DashboardHeader />
-            <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-                <MainDashboard 
-                    initialPortfolioData={props.portfolioData} 
-                    marketData={props.marketData}
-                    marketNews={props.marketNews}
-                />
-            </div>
-        </>
+        <MainDashboard 
+            initialPortfolioData={props.portfolioData} 
+            marketData={props.marketData}
+            marketNews={props.marketNews}
+        />
     )
 }
