@@ -3,7 +3,6 @@
 
 import React from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { PortfolioAnalysis } from '@/components/dashboard/portfolio-analysis';
 import type { PortfolioData } from '@/lib/data';
@@ -69,10 +68,17 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
             <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
                  <div className="flex flex-col gap-6">
                     {portfolioToDisplay && portfolioToDisplay.totalValue > 0 ? (
-                        <>
-                            <OverviewCards data={portfolioToDisplay} />
-                            <PerformanceChart data={portfolioToDisplay.performanceHistory} />
-                        </>
+                        <Card className="h-full flex flex-col items-center justify-center text-center p-8">
+                            <CardContent>
+                                <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                                <h2 className="text-2xl font-bold tracking-tight">
+                                    Your Portfolio is Analyzed
+                                </h2>
+                                <p className="text-muted-foreground">
+                                    You can now ask questions about your portfolio in the chat.
+                                </p>
+                            </CardContent>
+                        </Card>
                     ) : (
                          <Card className="h-full flex flex-col items-center justify-center text-center p-8">
                             <CardContent>
