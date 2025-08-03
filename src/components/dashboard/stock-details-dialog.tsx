@@ -84,8 +84,12 @@ export function StockDetailsDialog({ symbol, open, onOpenChange }: StockDetailsD
           <DialogTitle className="flex items-center gap-2">
             {isLoading ? <Skeleton className="h-8 w-48" /> : `Details for ${details?.profile?.name || symbol}`}
           </DialogTitle>
-          <DialogDescription>
-             {isLoading ? <Skeleton className="h-4 w-full" /> : `Ticker: ${symbol} | Industry: ${details?.profile?.finnhubIndustry || 'N/A'}`}
+          <DialogDescription asChild>
+            {isLoading ? (
+                <div><Skeleton className="h-4 w-full" /></div>
+            ) : (
+                <p>{`Ticker: ${symbol} | Industry: ${details?.profile?.finnhubIndustry || 'N/A'}`}</p>
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-6 max-h-[70vh] overflow-y-auto pr-4">
@@ -130,8 +134,7 @@ export function StockDetailsDialog({ symbol, open, onOpenChange }: StockDetailsD
               </Card>
             </div>
           ) : (
-            <p className="text-center text-muted-foreground">No details found for {symbol}.</p>
-          )}
+            <p className="text-center text-muted-foreground">No details found for {symbol}.</p>          )}
         </div>
       </DialogContent>
     </Dialog>
