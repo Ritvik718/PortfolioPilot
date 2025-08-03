@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -28,11 +28,21 @@ export async function askQuestion(question: string, portfolioData: any) {
 
 export async function addTransaction(transaction: Omit<Transaction, 'id' | 'date'> & { userId: string }) {
     try {
-        await addDoc(collection(db, 'transactions'), {
+        const docRef = await addDoc(collection(db, 'transactions'), {
             ...transaction,
             date: serverTimestamp(),
         });
-        return { success: true };
+
+        // Fetch the document to get the server-generated timestamp
+        const newDoc = await getDoc(docRef);
+        const newTransaction = {
+          id: newDoc.id,
+          ...newDoc.data(),
+           // Convert Firestore Timestamp to JS Date string
+          date: newDoc.data()?.date.toDate().toISOString(),
+        } as Transaction;
+
+        return { success: true, transaction: newTransaction };
     } catch (error: any) {
         return { success: false, message: error.message };
     }

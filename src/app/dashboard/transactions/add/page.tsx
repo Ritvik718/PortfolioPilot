@@ -36,9 +36,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { addTransaction } from '@/app/actions';
+import { addTransaction as addTransactionAction } from '@/app/actions';
 import { auth } from '@/lib/firebase';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { useTransaction } from '@/context/transaction-context';
 
 
 const addTransactionSchema = z.object({
@@ -55,6 +56,7 @@ export default function AddTransactionPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [user] = useAuthState(auth);
+  const { addTransaction } = useTransaction();
 
   const form = useForm<AddTransactionFormValues>({
     resolver: zodResolver(addTransactionSchema),
@@ -77,7 +79,7 @@ export default function AddTransactionPage() {
         return;
     }
     
-    const result = await addTransaction({
+    const result = await addTransactionAction({
         userId: user.uid,
         assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
         assetName: data.assetName,
@@ -87,7 +89,8 @@ export default function AddTransactionPage() {
         totalValue: data.quantity * data.pricePerUnit,
     });
 
-    if (result.success) {
+    if (result.success && result.transaction) {
+        addTransaction(result.transaction);
         toast({
         title: 'Transaction Added',
         description: `Successfully added ${data.quantity} of ${data.assetName}.`,
