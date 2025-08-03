@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
 import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -27,7 +27,7 @@ export async function askQuestion(question: string, portfolioData: any) {
 }
 
 export async function addTransaction(
-    transaction: Omit<Transaction, 'id' | 'date'>
+    transaction: Omit<Transaction, 'id'>
 ) {
     if (!transaction.userId) {
         return { success: false, message: "Authentication required." };
@@ -36,14 +36,24 @@ export async function addTransaction(
     try {
         const docRef = await addDoc(collection(db, 'transactions'), {
             ...transaction,
-            date: serverTimestamp(),
+            date: Timestamp.fromDate(new Date(transaction.date)),
         });
         const docSnap = await getDoc(docRef);
-        const newTransaction = {
+        if (!docSnap.exists()) {
+             return { success: false, message: "Failed to retrieve saved transaction." };
+        }
+        const data = docSnap.data();
+        const newTransaction: Transaction = {
             id: docRef.id,
-            ...docSnap.data(),
-            date: docSnap.data()?.date.toDate().toISOString(),
-        } as Transaction;
+            userId: data.userId,
+            assetId: data.assetId,
+            assetName: data.assetName,
+            type: data.type,
+            quantity: data.quantity,
+            pricePerUnit: data.pricePerUnit,
+            totalValue: data.totalValue,
+            date: data.date.toDate().toISOString(),
+        };
 
         return { success: true, transaction: newTransaction };
     } catch (error: any) {
