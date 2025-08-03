@@ -2,14 +2,14 @@
   "rules": {
     "users": {
       "$userId": {
-        ".read": "$userId === auth.uid",
-        ".write": "$userId === auth.uid"
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId"
       }
     },
     "transactions": {
       "$userId": {
-        ".read": "$userId === auth.uid",
-        ".write": "$userId === auth.uid",
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId",
         ".indexOn": "date"
       }
     }
