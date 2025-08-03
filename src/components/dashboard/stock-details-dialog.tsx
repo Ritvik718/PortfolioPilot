@@ -10,12 +10,13 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { getStockDetailsAction } from '@/app/actions';
-import type { GetStockDetailsOutput } from '@/ai/flows/get-stock-details';
+import type { GetStockDetailsOutput } from '@/ai/flows/get-stock-details.types';
 import { Loader2, Building, BarChart, TrendingUp, TrendingDown, Star, Minus } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { ChartContainer, Bar, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
-import { ChartTooltipContent } from '../ui/chart';
+import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+
 
 type StockDetailsDialogProps = {
   symbol: string;
