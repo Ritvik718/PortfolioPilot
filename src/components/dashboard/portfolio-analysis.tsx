@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { getAIInsights } from '@/app/actions';
-import { Lightbulb, Sparkles, Loader2, ListTree, AreaChart } from 'lucide-react';
+import { Lightbulb, Sparkles, Loader2, ListTree, AreaChart, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateInsightsOutput } from '@/ai/ai-insights';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 
 type PortfolioAnalysisProps = {
     onAnalysisComplete: (data: GenerateInsightsOutput) => void;
@@ -106,6 +107,23 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
         {analysisResult && (
             <div className="space-y-4 pt-4">
                 <Separator />
+                 <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="item-1">
+                        <AccordionTrigger>
+                            <h3 className="font-semibold flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" /> Key Questions Answered</h3>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-3 text-sm">
+                           <p><strong>Total Value:</strong> {analysisResult.totalValue}</p>
+                           <p><strong>Total Investment:</strong> {analysisResult.totalInvestment}</p>
+                           <p><strong>Overall Gain/Loss:</strong> {analysisResult.overallGainLoss}</p>
+                           <p><strong>Best Performer:</strong> {analysisResult.bestPerformer}</p>
+                           <p><strong>Biggest Winner:</strong> {analysisResult.biggestWinner}</p>
+                           <p><strong>Asset Allocation:</strong> {analysisResult.assetAllocation}</p>
+                           <p><strong>Underperforming Assets:</strong> {analysisResult.underperformingAssets}</p>
+                           <p><strong>10% Drop Simulation:</strong> {analysisResult.marketDropSimulation}</p>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
                 <div>
                     <h3 className="font-semibold flex items-center gap-2 mb-2"><ListTree className="h-5 w-5 text-primary" /> Key Insights</h3>
                     <ul className="space-y-2 list-disc pl-5 text-sm text-muted-foreground">
