@@ -43,7 +43,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     }
   }, [user, loading, router]);
 
-  if (loading || !user) {
+  if (loading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center">
         <div className="flex flex-col items-center gap-4">
@@ -52,6 +52,19 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     );
+  }
+
+  if (!user) {
+    // This will be caught by the useEffect above, but as a fallback,
+    // we can show a loader while redirecting.
+    return (
+         <div className="flex h-screen w-screen items-center justify-center">
+             <div className="flex flex-col items-center gap-4">
+                <Logo />
+                <p>Redirecting to login...</p>
+             </div>
+        </div>
+    )
   }
 
   return (

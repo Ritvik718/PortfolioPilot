@@ -79,11 +79,10 @@ export async function register(prevState: any, formData: FormData) {
             lastName,
             email,
         });
-
+        return { message: 'Registration successful! You can now log in.' };
     } catch (error: any) {
         return { message: error.message };
     }
-    redirect('/login');
 }
 
 export async function logout() {
