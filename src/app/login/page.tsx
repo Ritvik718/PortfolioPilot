@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { login } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 const initialState = {
   message: '',
@@ -34,23 +33,16 @@ function SubmitButton() {
 export default function LoginPage() {
   const [state, formAction] = useActionState(login, initialState);
   const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
-    if (state.message === 'Login successful') {
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back!',
-      });
-      router.push('/dashboard');
-    } else if (state.message && state.message !== '') {
+    if (state?.message) {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
         description: state.message,
       });
     }
-  }, [state, toast, router]);
+  }, [state, toast]);
 
 
   return (

@@ -16,7 +16,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { register } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 
 const initialState = {
   message: '',
@@ -34,23 +33,16 @@ function SubmitButton() {
 export default function RegisterPage() {
   const [state, formAction] = useActionState(register, initialState);
   const { toast } = useToast();
-  const router = useRouter();
   
   useEffect(() => {
-    if (state.message === 'Registration successful') {
-      toast({
-        title: 'Registration Successful',
-        description: 'You can now log in.',
-      });
-      router.push('/login');
-    } else if (state.message && state.message !== '') {
+    if (state?.message) {
         toast({
             variant: 'destructive',
             title: 'Registration Failed',
             description: state.message,
         });
     }
-  }, [state, toast, router]);
+  }, [state, toast]);
 
 
   return (

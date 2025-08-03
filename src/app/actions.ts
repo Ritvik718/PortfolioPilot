@@ -11,6 +11,7 @@ import {
   signOut,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { redirect } from 'next/navigation';
 
 export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput | { error: string }> {
   try {
@@ -56,10 +57,10 @@ export async function login(prevState: any, formData: FormData) {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    return { message: 'Login successful' };
   } catch (error: any) {
     return { message: error.message };
   }
+  redirect('/dashboard');
 }
 
 export async function register(prevState: any, formData: FormData) {
@@ -79,10 +80,10 @@ export async function register(prevState: any, formData: FormData) {
             email,
         });
 
-        return { message: 'Registration successful' };
     } catch (error: any) {
         return { message: error.message };
     }
+    redirect('/login');
 }
 
 export async function logout() {
