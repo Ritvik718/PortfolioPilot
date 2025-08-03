@@ -43,9 +43,9 @@ export function StockSearch() {
   }, [debouncedQuery]);
 
   const handleSelect = (symbol: string) => {
-    setSelectedSymbol(symbol);
     setQuery('');
     setDropdownOpen(false);
+    setSelectedSymbol(symbol);
   };
 
   const handleInputFocus = () => {
