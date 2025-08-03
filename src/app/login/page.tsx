@@ -43,14 +43,14 @@ export default function LoginPage() {
         description: 'Welcome back!',
       });
       router.push('/dashboard');
-    } else if (state.message) {
+    } else if (state.message && state.message !== '') {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
         description: state.message,
       });
     }
-  }, [state.message, toast, router]);
+  }, [state, toast, router]);
 
 
   return (

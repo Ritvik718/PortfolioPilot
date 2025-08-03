@@ -43,14 +43,14 @@ export default function RegisterPage() {
         description: 'You can now log in.',
       });
       router.push('/login');
-    } else if (state.message) {
+    } else if (state.message && state.message !== '') {
         toast({
             variant: 'destructive',
             title: 'Registration Failed',
             description: state.message,
         });
     }
-  }, [state.message, toast, router]);
+  }, [state, toast, router]);
 
 
   return (
