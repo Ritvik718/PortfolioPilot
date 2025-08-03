@@ -11,7 +11,7 @@ import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { AssetList } from '@/components/dashboard/asset-list';
 import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
 import type { PortfolioData, Transaction } from '@/lib/data';
-import type { StockQuote } from '@/lib/market-data';
+import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionList } from '@/components/dashboard/transaction-list';
 import { TransactionProvider, useTransaction } from '@/context/transaction-context';
@@ -20,14 +20,16 @@ import { auth } from '@/lib/firebase';
 import { getTransactions } from '@/lib/transactions';
 import { useToast } from '@/hooks/use-toast';
 import { MarketOverview } from './market-overview';
+import { MarketNewsFeed } from './market-news';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
     initialTransactions: Transaction[];
     marketData: StockQuote[];
+    marketNews: MarketNews[];
 };
 
-function MainDashboard({ portfolioData, marketData }: { portfolioData: PortfolioData | null, marketData: StockQuote[] }) {
+function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
     const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
     const { toast } = useToast();
@@ -59,6 +61,7 @@ function MainDashboard({ portfolioData, marketData }: { portfolioData: Portfolio
         return (
             <div className="grid gap-6">
                 <Skeleton className="h-[148px] w-full" />
+                <Skeleton className="h-[400px] w-full" />
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Skeleton className="h-[126px] w-full" />
                     <Skeleton className="h-[126px] w-full" />
@@ -85,6 +88,7 @@ function MainDashboard({ portfolioData, marketData }: { portfolioData: Portfolio
     return (
         <div className="grid gap-6">
             <MarketOverview quotes={marketData} />
+            <MarketNewsFeed news={marketNews} />
             {showWelcomeScreen ? (
                 <div className="text-center py-16">
                     <h2 className="text-2xl font-bold tracking-tight">
