@@ -9,8 +9,6 @@ import { PortfolioAnalysis, TextualInsights } from '@/components/dashboard/portf
 import type { PortfolioData } from '@/lib/data';
 import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
 import { MarketOverview } from './market-overview';
 import { MarketNewsFeed } from './market-news';
 import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
@@ -64,7 +62,6 @@ const itemVariants = {
 
 
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
-    const [user, userLoading] = useAuthState(auth);
     const [userPortfolioData, setUserPortfolioData] = React.useState<UserPortfolioData | null>(null);
     const [textualInsights, setTextualInsights] = React.useState<TextualInsights | null>(null);
 
@@ -85,6 +82,7 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
         }
 
         try {
+            const { exportPortfolioToPdf } = await import('@/lib/pdf-export');
             await exportPortfolioToPdf(userPortfolioData, textualInsights);
             toast({
                 title: "Export Successful",
@@ -102,7 +100,7 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
 
     const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
     
-    const isLoading = userLoading;
+    const isLoading = false; // No longer waiting for user auth
 
     if (isLoading) {
         return (
