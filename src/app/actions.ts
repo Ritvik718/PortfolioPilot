@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy, Timestamp, setDoc } from 'firebase/firestore';
 import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -39,7 +39,6 @@ export async function addTransaction(
             date: Timestamp.fromDate(new Date(transaction.date)),
         });
 
-        // Construct the new transaction object directly, no need to re-fetch.
         const newTransaction: Transaction = {
             id: docRef.id,
             ...transaction,
@@ -99,8 +98,8 @@ export async function register(prevState: any, formData: FormData) {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        // Add user's name to Firestore
-        await addDoc(collection(db, "users"), {
+        // Add user's name to Firestore, ensuring the document ID is the user's UID
+        await setDoc(doc(db, "users", user.uid), {
             uid: user.uid,
             firstName,
             lastName,
