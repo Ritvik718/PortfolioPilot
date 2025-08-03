@@ -1,7 +1,6 @@
 'use server';
 
 import { portfolioQA } from '@/ai/flows/portfolio-qa';
-import { useRouter } from 'next/navigation';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
