@@ -6,12 +6,13 @@ import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "REPLACE_WITH_YOUR_API_KEY",
-  authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-  messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID"
+  "projectId": "portfoliopilot-m9bij",
+  "appId": "1:327873669711:web:92aa79c384581d1c8e583a",
+  "storageBucket": "portfoliopilot-m9bij.firebasestorage.app",
+  "apiKey": "AIzaSyCDRCRblbOUesO4WBg4Aj9TdDq4F3_RHU8",
+  "authDomain": "portfoliopilot-m9bij.firebaseapp.com",
+  "measurementId": "",
+  "messagingSenderId": "327873669711"
 };
 
 // Initialize Firebase
