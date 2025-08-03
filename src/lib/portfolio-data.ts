@@ -81,7 +81,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 
             try {
                 // Add a delay to avoid hitting API rate limits
-                await delay(250);
+                await delay(1000);
                 
                 const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);

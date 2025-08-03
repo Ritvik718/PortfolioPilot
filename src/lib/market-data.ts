@@ -51,7 +51,7 @@ export async function getMagSevenData(): Promise<StockQuote[]> {
         for (const stock of MAG_SEVEN_STOCKS) {
             try {
                 // Add a delay to avoid hitting API rate limits
-                await delay(250); 
+                await delay(1000); 
                 
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${apiKey}`);
 
