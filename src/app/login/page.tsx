@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -67,12 +67,6 @@ export default function LoginPage() {
   const [state, formAction] = useActionState(login, initialState);
   const { toast } = useToast();
   const router = useRouter();
-  const [domain, setDomain] = useState('');
-
-  useEffect(() => {
-    setDomain(window.location.hostname);
-  }, []);
-
 
   useEffect(() => {
     if (state.message === 'Login successful') {
@@ -101,14 +95,6 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {domain && (
-            <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong className="font-bold">Info: </strong>
-                <span className="block sm:inline">Your app is running on this domain: </span>
-                <span className="font-mono bg-blue-200 p-1 rounded">{domain}</span>
-                <p className="text-xs mt-2">Add this domain to your Firebase project's authorized domains to use Google Sign-In.</p>
-            </div>
-          )}
           <form action={formAction} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
@@ -133,9 +119,6 @@ export default function LoginPage() {
               <Input id="password" name="password" type="password" required />
             </div>
             <SubmitButton />
-             {state.message && state.message !== 'Login successful' && (
-              <p className="text-sm font-medium text-destructive">{state.message}</p>
-            )}
           </form>
            <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
