@@ -85,29 +85,6 @@ export async function register(prevState: any, formData: FormData) {
     }
 }
 
-export async function handleGoogleSignIn(userData: {uid: string, email: string | null, displayName: string | null}) {
-    const { uid, email, displayName } = userData;
-    const userRef = doc(db, 'users', uid);
-
-    try {
-        const docSnap = await getDoc(userRef);
-        if (!docSnap.exists()) {
-            const firstName = displayName ? displayName.split(' ')[0] : '';
-            const lastName = displayName ? displayName.split(' ').slice(1).join(' ') : '';
-            await setDoc(userRef, {
-                uid,
-                email,
-                firstName,
-                lastName,
-            });
-        }
-        return { success: true };
-    } catch (error: any) {
-        console.error("Error handling Google sign-in:", error);
-        return { success: false, message: error.message };
-    }
-}
-
 export async function logout() {
     try {
         await signOut(auth);
