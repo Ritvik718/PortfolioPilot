@@ -1,3 +1,4 @@
+
 import type { PortfolioData } from './data';
 
 function generatePerformanceData(days: number, baseValue: number, volatility: number): { date: string, value: number }[] {
@@ -54,11 +55,35 @@ const mockPortfolioData: PortfolioData = {
     },
 };
 
-// Simulate an API call
+// This function now simulates fetching data from a real API.
+// In a real application, you would replace the mock data logic with a `fetch` call.
 export async function getPortfolioData(): Promise<PortfolioData> {
+    
+    // Example of how you would use the API key from your .env file
+    const apiKey = process.env.FINANCIAL_DATA_API_KEY;
+
+    // --- REAL API CALL EXAMPLE ---
+    // if (!apiKey || apiKey === "YOUR_API_KEY_HERE") {
+    //   console.warn("API key not found. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
+    // } else {
+    //   try {
+    //     // Replace this with your actual API endpoint
+    //     const response = await fetch(`https://api.your-financial-data-provider.com/v1/portfolio?apiKey=${apiKey}`);
+    //     if (!response.ok) {
+    //       throw new Error('Failed to fetch real data, falling back to mock data.');
+    //     }
+    //     const realData = await response.json();
+    //     return realData;
+    //   } catch (error) {
+    //     console.error(error);
+    //     // Fallback to mock data if the API call fails
+    //   }
+    // }
+
+    // Returning mock data for now.
     return new Promise(resolve => {
         setTimeout(() => {
             resolve(mockPortfolioData);
-        }, 1000); // Simulate a 1-second network delay
+        }, 500); // Simulate a short network delay
     });
 }
