@@ -9,17 +9,14 @@ import { useToast } from '@/hooks/use-toast';
 import { getParsedPortfolio, getInsights } from '@/app/actions';
 import { Lightbulb, Sparkles, Loader2, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
+import type { ParsePortfolioOutput, GenerateTextualInsightsOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
+import type { TextualInsights, UserPortfolioData } from './dashboard-client-page';
 
-type GenerateTextualInsightsOutput = {
-    insights: string[];
-    forecast: string;
-}
 
 type PortfolioAnalysisProps = {
-    onAnalysisComplete: (data: {parsed: ParsePortfolioOutput, calculated: CalculatedInsights}) => void;
+    onAnalysisComplete: (data: UserPortfolioData, insights: TextualInsights) => void;
 }
 
 export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
@@ -71,7 +68,6 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
     const parsedData = parseResult as ParsePortfolioOutput;
     const calculated = calculateInsights(parsedData);
     setAnalysisResult(calculated);
-    onAnalysisComplete({ parsed: parsedData, calculated: calculated });
     
     toast({
       title: 'Analysis Complete',
@@ -87,8 +83,11 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
             title: 'Insight Generation Failed',
             description: textualResult.error,
         });
+         onAnalysisComplete({ parsed: parsedData, calculated: calculated }, { insights: [], forecast: "" });
     } else {
-        setTextualInsights(textualResult as GenerateTextualInsightsOutput);
+        const insights = textualResult as GenerateTextualInsightsOutput;
+        setTextualInsights(insights);
+        onAnalysisComplete({ parsed: parsedData, calculated: calculated }, insights);
     }
     setIsGeneratingInsights(false);
   };

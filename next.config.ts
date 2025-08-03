@@ -30,6 +30,14 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/html2canvas-proxy',
+        destination: 'https://html2canvas.proxy.beeceptor.com',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
