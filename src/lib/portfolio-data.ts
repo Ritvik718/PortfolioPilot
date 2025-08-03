@@ -55,6 +55,8 @@ const getEmptyPortfolioData = (): PortfolioData => {
     };
 };
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function getPortfolioData(): Promise<PortfolioData> {
     const apiKey = process.env.FINANCIAL_DATA_API_KEY;
 
@@ -64,56 +66,63 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     }
 
     try {
-        const updatedAssetsPromises = baseAssets.map(async (asset) => {
-            if (asset.category === 'Real Estate') {
-                return {
+        const updatedAssets: (Asset | null)[] = [];
+
+        for (const asset of baseAssets) {
+             if (asset.category === 'Real Estate') {
+                updatedAssets.push({
                     ...asset,
                     price: mockRealEstateData.price,
                     change24h: mockRealEstateData.change24h,
                     value: asset.holdings * mockRealEstateData.price,
-                };
+                });
+                continue;
             }
 
             try {
+                // Add a delay to avoid hitting API rate limits
+                await delay(250);
+                
                 const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
                 
                 if (!response.ok) {
                     console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Skipping this asset.`);
-                    return null;
+                    updatedAssets.push(null);
+                    continue;
                 }
 
                 const data = await response.json() as any;
                 
                 if (!data || typeof data.c === 'undefined') {
                    console.error(`Invalid data format received from Finnhub for ${asset.symbol}. Skipping this asset.`);
-                   return null;
+                   updatedAssets.push(null);
+                   continue;
                 }
                 
                 const price = data.c;
                 const change24h = data.d;
 
-                return {
+                updatedAssets.push({
                     ...asset,
                     price: price,
                     change24h: change24h,
                     value: asset.holdings * price,
-                };
+                });
             } catch (assetError) {
                 console.error(`Failed to fetch data for ${asset.symbol}:`, assetError, `Skipping this asset.`);
-                return null;
+                updatedAssets.push(null);
             }
-        });
+        }
         
-        const updatedAssetsResults = await Promise.all(updatedAssetsPromises);
-        const updatedAssets = updatedAssetsResults.filter((asset): asset is Asset => asset !== null);
+        const validAssets = updatedAssets.filter((asset): asset is Asset => asset !== null);
 
-        if (updatedAssets.length === 0) {
+        if (validAssets.length === 0) {
             return getEmptyPortfolioData();
         }
         
-        const totalValue = updatedAssets.reduce((sum, asset) => sum + asset.value, 0);
-        const change24h = updatedAssets.reduce((sum, asset) => sum + (asset.change24h || 0) * asset.holdings, 0);
+        const totalValue = validAssets.reduce((sum, asset) => sum + asset.value, 0);
+        const change24h = validAssets.reduce((sum, asset) => sum + (asset.change24h || 0) * asset.holdings, 0);
         const totalValue24hAgo = totalValue - change24h;
         const change24hPercentage = totalValue24hAgo === 0 ? 0 : (change24h / totalValue24hAgo) * 100;
 
@@ -121,7 +130,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
             totalValue,
             change24h,
             change24hPercentage,
-            assets: updatedAssets,
+            assets: validAssets,
             performanceHistory: {
                 '1D': generatePerformanceData(24, totalValue24hAgo, 0.002),
                 '7D': generatePerformanceData(7, totalValue - (change24h * 7), 0.01),

@@ -38,43 +38,49 @@ const getApiKey = () => {
     return apiKey;
 }
 
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function getMagSevenData(): Promise<StockQuote[]> {
     const apiKey = getApiKey();
     if (!apiKey) {
         return MAG_SEVEN_STOCKS.map(stock => ({ ...stock, price: 0, change: 0, changePercent: 0 }));
     }
 
+    const quotes: StockQuote[] = [];
     try {
-        const quotePromises = MAG_SEVEN_STOCKS.map(async (stock) => {
-             try {
+        for (const stock of MAG_SEVEN_STOCKS) {
+            try {
+                // Add a delay to avoid hitting API rate limits
+                await delay(250); 
+                
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${stock.symbol}&token=${apiKey}`);
 
                 if (!response.ok) {
                     console.error(`Finnhub API request failed for ${stock.symbol} with status ${response.status}.`);
-                    return { ...stock, price: 0, change: 0, changePercent: 0 };
+                    quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
+                    continue;
                 }
 
                 const data = await response.json() as any;
 
                 if (!data || typeof data.c === 'undefined') {
                    console.error(`Invalid data format received from Finnhub for ${stock.symbol}.`);
-                   return { ...stock, price: 0, change: 0, changePercent: 0 };
+                   quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
+                   continue;
                 }
 
-                return {
+                quotes.push({
                     symbol: stock.symbol,
                     name: stock.name,
                     price: data.c,
                     change: data.d,
                     changePercent: data.dp,
-                };
+                });
             } catch (assetError) {
                 console.error(`Failed to fetch data for ${stock.symbol}:`, assetError);
-                return { ...stock, price: 0, change: 0, changePercent: 0 };
+                quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
             }
-        });
-
-        const quotes = await Promise.all(quotePromises);
+        }
         return quotes;
 
     } catch (error) {
