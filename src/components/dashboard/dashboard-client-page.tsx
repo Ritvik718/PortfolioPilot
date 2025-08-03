@@ -9,7 +9,7 @@ import { PlusCircle } from 'lucide-react';
 import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { AssetList } from '@/components/dashboard/asset-list';
-import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
+import { PortfolioAnalysis } from '@/components/dashboard/portfolio-analysis';
 import type { PortfolioData, Transaction } from '@/lib/data';
 import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -79,10 +79,8 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
         )
     }
     
-    const hasTransactions = transactions.length > 0;
-    // We check for portfolioData but also consider that real-time data might be empty if API fails.
-    // The main indicator for the welcome screen should be the absence of transactions.
-    const showWelcomeScreen = !transactionsLoading && !hasTransactions;
+    // Welcome screen can now be for analyzing the portfolio
+    const showWelcomeScreen = !portfolioData?.totalValue;
 
 
     return (
@@ -95,14 +93,9 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
                         Welcome to your Portfolio
                     </h2>
                     <p className="text-muted-foreground">
-                        You have no transactions yet. Add one to get started.
+                        Upload your portfolio data to get started with AI analysis.
                     </p>
-                    <Button asChild className="mt-4">
-                        <Link href="/dashboard/transactions/add">
-                            <PlusCircle className="mr-2 h-4 w-4" />
-                            Add Transaction
-                        </Link>
-                    </Button>
+                    <PortfolioAnalysis />
                 </div>
             ) : (
                 portfolioData && (
@@ -121,7 +114,7 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
                             <TransactionList transactions={transactions} isLoading={transactionsLoading} />
                         </div>
                         <div className="flex flex-col gap-6">
-                            <AIChatWidget portfolioData={portfolioData} />
+                           <PortfolioAnalysis />
                         </div>
                     </div>
                     </div>

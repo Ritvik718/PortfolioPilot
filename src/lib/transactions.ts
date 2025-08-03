@@ -1,3 +1,4 @@
+
 'use client';
 
 import { db, auth } from '@/lib/firebase';
@@ -13,6 +14,8 @@ import {
 } from 'firebase/firestore';
 import type { Transaction } from '@/lib/data';
 
+// Note: addTransaction is no longer used with the portfolio upload flow.
+// It is kept here for potential future use or reference.
 export async function addTransaction(
   transactionData: Omit<Transaction, 'id' | 'date'> & { userId: string }
 ): Promise<{ success: boolean; transaction?: Transaction; message?: string }> {

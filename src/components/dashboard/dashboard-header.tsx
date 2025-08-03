@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import {
   Settings,
   BarChart2,
   PanelLeft,
-  PlusCircle,
   FileDown,
 } from 'lucide-react';
 import { Logo } from '../logo';
@@ -58,12 +58,6 @@ export function DashboardHeader() {
             <div className="ml-auto flex-1 sm:flex-initial">
               {/* Future search bar can go here */}
             </div>
-             <Button asChild variant="outline" size="sm">
-                <Link href="/dashboard/transactions/add">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Transaction
-                </Link>
-            </Button>
             <Button variant="default" size="sm" onClick={handleExport}>
                 <FileDown className="mr-2 h-4 w-4" />
                 Export

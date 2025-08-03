@@ -1,6 +1,7 @@
+
 'use server';
 
-import { portfolioQA } from '@/ai/flows/portfolio-qa';
+import { generateInsights, GenerateInsightsInput } from '@/ai/ai-insights';
 import { auth, db } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
@@ -9,14 +10,10 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
-export async function askQuestion(question: string, portfolioData: any) {
+export async function getAIInsights(input: GenerateInsightsInput) {
   try {
-    const stringifiedData = JSON.stringify(portfolioData, null, 2);
-    const result = await portfolioQA({
-      question,
-      portfolioData: stringifiedData,
-    });
-    return { answer: result.answer };
+    const result = await generateInsights(input);
+    return result;
   } catch (error) {
     console.error('Error calling AI flow:', error);
     return {
