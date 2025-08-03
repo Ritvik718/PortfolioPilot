@@ -7,6 +7,28 @@ import { Logo } from '@/components/logo';
 import { AreaChart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: 'easeOut',
+    },
+  },
+};
+
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,26 +57,37 @@ export default function HomePage() {
            <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] -z-10" />
 
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-6 text-center">
+            <motion.div 
+              className="flex flex-col items-center space-y-6 text-center"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
               <div className="space-y-4">
-                <h1 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none">
+                 <motion.h1 
+                  className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none"
+                  variants={itemVariants}
+                >
                   AI-Powered Portfolio Tracking
-                </h1>
-                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                </motion.h1>
+                <motion.p 
+                  className="mx-auto max-w-[700px] text-muted-foreground md:text-xl"
+                  variants={itemVariants}
+                >
                   Unlock deep insights, analyze your assets, and chat with an AI that understands your financial data.
-                </p>
+                </motion.p>
               </div>
-              <div className="space-x-4">
+              <motion.div className="space-x-4" variants={itemVariants}>
                 <Link href="/dashboard">
                   <Button size="lg">Get Started</Button>
                 </Link>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
              <motion.div
                 className="relative mt-20"
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.2, ease: "anticipate" }}
+                transition={{ duration: 0.8, delay: 0.6, ease: "anticipate" }}
             >
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150%] h-2/3 bg-primary/20 blur-3xl" />
                 <div className="max-w-3xl mx-auto p-1 rounded-2xl bg-white/10 backdrop-blur-md shadow-2xl shadow-primary/10 border border-white/10">
@@ -71,7 +104,7 @@ export default function HomePage() {
                                 className="w-full h-full flex items-end gap-1"
                                 initial="hidden"
                                 animate="visible"
-                                transition={{ staggerChildren: 0.1 }}
+                                transition={{ staggerChildren: 0.1, delayChildren: 0.8 }}
                             >
                                 {[40, 60, 50, 75, 65, 85, 90].map((h, i) => (
                                     <motion.div
