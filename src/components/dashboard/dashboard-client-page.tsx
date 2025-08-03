@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -12,35 +12,33 @@ import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
 import type { PortfolioData, Transaction } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionList } from '@/components/dashboard/transaction-list';
-import { TransactionProvider } from '@/context/transaction-context';
-
+import { TransactionProvider, useTransaction } from '@/context/transaction-context';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { getTransactions } from '@/app/actions';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
     initialTransactions: Transaction[];
 };
 
-export function DashboardClientPage({ portfolioData, initialTransactions }: DashboardClientPageProps) {
-    const [isLoading, setIsLoading] = React.useState(!portfolioData);
-    
-    // This effect could be used for client-side re-fetching if needed in the future
-    // For now, we rely on the server-fetched initialData
-    React.useEffect(() => {
-        if (!portfolioData) {
-            setIsLoading(true);
-        } else {
-            setIsLoading(false);
+function MainDashboard({ portfolioData, initialTransactions }: DashboardClientPageProps) {
+    const [user, userLoading] = useAuthState(auth);
+    const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
+
+    useEffect(() => {
+        if (user && !userLoading) {
+            setTransactionsLoading(true);
+            getTransactions(user.uid)
+                .then(setTransactions)
+                .finally(() => setTransactionsLoading(false));
         }
-    }, [portfolioData]);
+    }, [user, userLoading, setTransactions, setTransactionsLoading]);
 
-    const hasTransactions = initialTransactions.length > 0;
-    const hasPortfolioData = portfolioData && portfolioData.assets.length > 0;
+    const isLoading = !portfolioData || userLoading;
 
-  return (
-    <TransactionProvider initialTransactions={initialTransactions}>
-      <DashboardHeader />
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-        {isLoading ? (
+    if (isLoading) {
+        return (
             <div className="grid gap-6">
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Skeleton className="h-[126px] w-full" />
@@ -56,7 +54,13 @@ export function DashboardClientPage({ portfolioData, initialTransactions }: Dash
                      <Skeleton className="h-[500px]" />
                 </div>
             </div>
-        ) : hasTransactions || hasPortfolioData ? (
+        )
+    }
+    
+    const hasTransactions = transactions.length > 0;
+    const hasPortfolioData = portfolioData && portfolioData.assets.length > 0;
+
+    return hasTransactions || hasPortfolioData ? (
           portfolioData && (
             <div className="grid gap-6">
               <OverviewCards data={portfolioData} />
@@ -70,7 +74,7 @@ export function DashboardClientPage({ portfolioData, initialTransactions }: Dash
               </div>
                <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
                   <div className="xl:col-span-2">
-                      <TransactionList transactions={initialTransactions} />
+                      <TransactionList transactions={transactions} isLoading={transactionsLoading} />
                   </div>
                   <div className="flex flex-col gap-6">
                       <AIChatWidget portfolioData={portfolioData} />
@@ -93,8 +97,17 @@ export function DashboardClientPage({ portfolioData, initialTransactions }: Dash
                     </Link>
                 </Button>
             </div>
-        )}
-      </div>
-    </TransactionProvider>
-  );
+        );
+}
+
+
+export function DashboardClientPage(props: DashboardClientPageProps) {
+    return (
+        <TransactionProvider initialTransactions={props.initialTransactions}>
+            <DashboardHeader />
+            <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
+                <MainDashboard {...props} />
+            </div>
+        </TransactionProvider>
+    )
 }

@@ -37,7 +37,9 @@ import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { addTransaction } from '@/app/actions';
-
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const addTransactionSchema = z.object({
   assetName: z.string().min(1, { message: 'Asset name is required' }),
@@ -50,6 +52,7 @@ const addTransactionSchema = z.object({
 type AddTransactionFormValues = z.infer<typeof addTransactionSchema>;
 
 export default function AddTransactionPage() {
+  const [user, loading, error] = useAuthState(auth);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -65,13 +68,24 @@ export default function AddTransactionPage() {
   });
 
   const onSubmit = async (data: AddTransactionFormValues) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'You must be logged in to add a transaction.',
+      });
+      return;
+    }
+
     const result = await addTransaction({
+        userId: user.uid,
         assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
         assetName: data.assetName,
         type: data.type,
         quantity: data.quantity,
         pricePerUnit: data.pricePerUnit,
         totalValue: data.quantity * data.pricePerUnit,
+        date: data.date.toISOString(),
     });
 
     if (result.success) {
@@ -88,6 +102,40 @@ export default function AddTransactionPage() {
         });
     }
   };
+
+  if (loading) {
+    return (
+        <>
+            <DashboardHeader />
+            <div className="flex-1 overflow-y-auto p-4 md:p-8">
+                 <Card className="mx-auto max-w-2xl">
+                    <CardHeader>
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-full mt-2" />
+                    </CardHeader>
+                    <CardContent className="grid gap-6">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <div className="grid grid-cols-2 gap-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <Skeleton className="h-10 w-full" />
+                         <div className="flex justify-end gap-2">
+                            <Skeleton className="h-10 w-24" />
+                            <Skeleton className="h-10 w-32" />
+                        </div>
+                    </CardContent>
+                 </Card>
+            </div>
+        </>
+    )
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>
+  }
+
 
   return (
     <>
@@ -211,7 +259,9 @@ export default function AddTransactionPage() {
                     <Button type="button" variant="outline" asChild>
                         <Link href="/dashboard">Cancel</Link>
                     </Button>
-                    <Button type="submit">Add Transaction</Button>
+                    <Button type="submit" disabled={form.formState.isSubmitting}>
+                        {form.formState.isSubmitting ? 'Adding...' : 'Add Transaction'}
+                    </Button>
                 </div>
               </form>
             </Form>

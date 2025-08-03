@@ -1,19 +1,23 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from 'react';
 import type { Transaction } from '@/lib/data';
 
 interface TransactionContextType {
   transactions: Transaction[];
+  setTransactions: Dispatch<SetStateAction<Transaction[]>>;
+  isLoading: boolean;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
 export function TransactionProvider({ children, initialTransactions = [] }: { children: ReactNode, initialTransactions?: Transaction[] }) {
-  const [transactions] = useState<Transaction[]>(initialTransactions);
+  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
+  const [isLoading, setIsLoading] = useState(true);
 
   return (
-    <TransactionContext.Provider value={{ transactions }}>
+    <TransactionContext.Provider value={{ transactions, setTransactions, isLoading, setIsLoading }}>
       {children}
     </TransactionContext.Provider>
   );

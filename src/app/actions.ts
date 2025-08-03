@@ -9,7 +9,6 @@ import {
 } from 'firebase/auth';
 import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Transaction } from '@/lib/data';
-import { getCurrentUser } from '@/lib/auth';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -27,32 +26,39 @@ export async function askQuestion(question: string, portfolioData: any) {
   }
 }
 
-export async function addTransaction(transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) {
-    const user = await getCurrentUser();
-    if (!user) {
+export async function addTransaction(
+    transaction: Omit<Transaction, 'id' | 'date'>
+) {
+    if (!transaction.userId) {
         return { success: false, message: "Authentication required." };
     }
 
     try {
         const docRef = await addDoc(collection(db, 'transactions'), {
             ...transaction,
-            userId: user.uid,
             date: serverTimestamp(),
         });
-        return { success: true, id: docRef.id };
+        const docSnap = await getDoc(docRef);
+        const newTransaction = {
+            id: docRef.id,
+            ...docSnap.data(),
+            date: docSnap.data()?.date.toDate().toISOString(),
+        } as Transaction;
+
+        return { success: true, transaction: newTransaction };
     } catch (error: any) {
         return { success: false, message: error.message };
     }
 }
 
-export async function getTransactions(): Promise<Transaction[]> {
-    const user = await getCurrentUser();
-    if (!user) {
+
+export async function getTransactions(userId: string): Promise<Transaction[]> {
+    if (!userId) {
         return [];
     }
 
     try {
-        const q = query(collection(db, 'transactions'), where('userId', '==', user.uid), orderBy('date', 'desc'));
+        const q = query(collection(db, 'transactions'), where('userId', '==', userId), orderBy('date', 'desc'));
         const querySnapshot = await getDocs(q);
         const transactions = querySnapshot.docs.map(doc => {
             const data = doc.data();
@@ -89,8 +95,17 @@ export async function register(prevState: any, formData: FormData) {
     const lastName = formData.get('lastName') as string;
 
     try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        // You might want to save the first and last name to Firestore here
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Add user's name to Firestore
+        await addDoc(collection(db, "users"), {
+            uid: user.uid,
+            firstName,
+            lastName,
+            email,
+        });
+
         return { message: 'Registration successful' };
     } catch (error: any) {
         return { message: error.message };

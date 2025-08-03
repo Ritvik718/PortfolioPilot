@@ -18,12 +18,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import type { Transaction } from '@/lib/data';
 import { format } from 'date-fns';
+import { Skeleton } from '../ui/skeleton';
 
 type TransactionListProps = {
   transactions: Transaction[];
+  isLoading?: boolean;
 };
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, isLoading }: TransactionListProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -52,7 +54,18 @@ export function TransactionList({ transactions }: TransactionListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {transactions.map((transaction) => (
+            {isLoading ? (
+                Array.from({length: 5}).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
+                        <TableCell><Skeleton className="h-5 w-12" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-20 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-24 ml-auto" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-5 w-28 ml-auto" /></TableCell>
+                    </TableRow>
+                ))
+            ) : transactions.map((transaction) => (
               <TableRow key={transaction.id}>
                 <TableCell>
                   <div className="font-medium">{transaction.assetName}</div>
