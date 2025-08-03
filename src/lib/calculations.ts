@@ -1,5 +1,6 @@
 
-import type { ParsePortfolioOutput, ParsedPortfolioAsset } from "@/ai/flows/parse-portfolio";
+import type { ParsePortfolioOutput } from "@/ai/flows/parse-portfolio";
+import type { ParsedPortfolioAsset } from "@/lib/data";
 
 export interface CalculatedInsights {
     totalValue: number;

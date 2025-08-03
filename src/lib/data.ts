@@ -1,3 +1,15 @@
+import { z } from 'zod';
+
+export const ParsedPortfolioAssetSchema = z.object({
+    name: z.string().describe("The name of the asset."),
+    symbol: z.string().describe("The stock or crypto ticker symbol."),
+    category: z.enum(['Stock', 'Crypto', 'Real Estate']).describe("The category of the asset."),
+    quantity: z.number().describe("The quantity of the asset held."),
+    purchasePrice: z.number().describe("The price at which the asset was purchased."),
+    currentPrice: z.number().describe("The current market price of the asset."),
+});
+export type ParsedPortfolioAsset = z.infer<typeof ParsedPortfolioAssetSchema>;
+
 export type Asset = {
   id: string;
   name: string;

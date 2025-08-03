@@ -5,12 +5,12 @@
  *
  * - parsePortfolio - Parses a raw data string into a structured list of assets.
  * - ParsePortfolioInput - The input type for the parsePortfolio function.
- * - ParsedPortfolioAsset - The schema for a single parsed asset.
  * - ParsePortfolioOutput - The return type for the parsePortfolio function.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { ParsedPortfolioAssetSchema } from '@/lib/data';
 
 const ParsePortfolioInputSchema = z.object({
   portfolioData: z
@@ -18,16 +18,6 @@ const ParsePortfolioInputSchema = z.object({
     .describe('A string containing the user\'s portfolio data, typically in CSV or JSON format. This data should include details like asset names, quantities, purchase prices, and current prices to enable calculations.'),
 });
 export type ParsePortfolioInput = z.infer<typeof ParsePortfolioInputSchema>;
-
-export const ParsedPortfolioAssetSchema = z.object({
-    name: z.string().describe("The name of the asset."),
-    symbol: z.string().describe("The stock or crypto ticker symbol."),
-    category: z.enum(['Stock', 'Crypto', 'Real Estate']).describe("The category of the asset."),
-    quantity: z.number().describe("The quantity of the asset held."),
-    purchasePrice: z.number().describe("The price at which the asset was purchased."),
-    currentPrice: z.number().describe("The current market price of the asset."),
-});
-export type ParsedPortfolioAsset = z.infer<typeof ParsedPortfolioAssetSchema>;
 
 const ParsePortfolioOutputSchema = z.object({
   assets: z.array(ParsedPortfolioAssetSchema).describe("An array of assets parsed from the user's data."),
