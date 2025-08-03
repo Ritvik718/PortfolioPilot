@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { getStockDetailsAction } from '@/app/actions';
 import type { GetStockDetailsOutput } from '@/ai/flows/get-stock-details.types';
-import { Loader2, Building, BarChart, TrendingUp, TrendingDown, Star, Minus } from 'lucide-react';
+import { Loader2, Building, BarChart as BarChartIcon, TrendingUp, TrendingDown, Star, Minus } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Bar, BarChart as RechartsBarChart, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
@@ -33,11 +33,11 @@ const AnalystRatingsChart = ({ data }: { data: any[] }) => {
             <YAxis dataKey="name" type="category" tickLine={false} axisLine={false} />
             <Tooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
             <Legend />
-            <Bar dataKey="strongBuy" stackId="a" fill="var(--color-green-500)" name="Strong Buy" />
-            <Bar dataKey="buy" stackId="a" fill="var(--color-green-400)" name="Buy" />
-            <Bar dataKey="hold" stackId="a" fill="var(--color-yellow-400)" name="Hold" />
-            <Bar dataKey="sell" stackId="a" fill="var(--color-red-400)" name="Sell" />
-            <Bar dataKey="strongSell" stackId="a" fill="var(--color-red-500)" name="Strong Sell" />
+            <Bar dataKey="strongBuy" stackId="a" fill="hsl(var(--chart-3))" name="Strong Buy" />
+            <Bar dataKey="buy" stackId="a" fill="hsl(var(--chart-3) / 0.7)" name="Buy" />
+            <Bar dataKey="hold" stackId="a" fill="hsl(var(--chart-4))" name="Hold" />
+            <Bar dataKey="sell" stackId="a" fill="hsl(var(--destructive) / 0.7)" name="Sell" />
+            <Bar dataKey="strongSell" stackId="a" fill="hsl(var(--destructive))" name="Strong Sell" />
         </RechartsBarChart>
     </ChartContainer>
   );
@@ -113,7 +113,7 @@ export function StockDetailsDialog({ symbol, open, onOpenChange }: StockDetailsD
               </Card>
 
               <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><BarChart /> Key Financials</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="flex items-center gap-2"><BarChartIcon /> Key Financials</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div><p className="font-semibold">52 Week High</p><p className="flex items-center gap-1 text-green-500"><TrendingUp size={16}/> {formatCurrency(details.financials?.['52WeekHigh'])}</p></div>
                     <div><p className="font-semibold">52 Week Low</p><p className="flex items-center gap-1 text-red-500"><TrendingDown size={16}/> {formatCurrency(details.financials?.['52WeekLow'])}</p></div>
