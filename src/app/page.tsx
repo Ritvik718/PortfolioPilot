@@ -1,6 +1,11 @@
+
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
+import { AreaChart } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function HomePage() {
   return (
@@ -26,23 +31,64 @@ export default function HomePage() {
         </nav>
       </header>
       <main className="flex-1">
-        <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]">
+        <section className="relative w-full py-24 md:py-32 lg:py-40 xl:py-48 overflow-hidden">
+           <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))] -z-10" />
+
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Welcome to PortfolioPilot
+            <div className="flex flex-col items-center space-y-6 text-center">
+              <div className="space-y-4">
+                <h1 className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none">
+                  AI-Powered Portfolio Tracking
                 </h1>
-                <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Your AI-powered finance portfolio tracker.
+                <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl">
+                  Unlock deep insights, analyze your assets, and chat with an AI that understands your financial data.
                 </p>
               </div>
               <div className="space-x-4">
                 <Link href="/dashboard">
-                  <Button>Go to Dashboard</Button>
+                  <Button size="lg">Get Started</Button>
                 </Link>
               </div>
             </div>
+             <motion.div
+                className="relative mt-20"
+                initial={{ opacity: 0, y: 50, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.8, delay: 0.2, ease: "anticipate" }}
+            >
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150%] h-2/3 bg-primary/20 blur-3xl" />
+                <div className="max-w-3xl mx-auto p-1 rounded-2xl bg-white/10 backdrop-blur-md shadow-2xl shadow-primary/10 border border-white/10">
+                     <div className="p-8 rounded-lg bg-background/80">
+                        <div className="flex items-center justify-between">
+                            <div className="space-y-1">
+                                <p className="text-sm text-muted-foreground">Portfolio Value</p>
+                                <p className="text-2xl font-bold">$1,234,567.89</p>
+                            </div>
+                            <AreaChart className="h-8 w-8 text-primary" />
+                        </div>
+                        <div className="mt-6 h-24 w-full rounded-md bg-muted/50 flex items-end p-2">
+                             <motion.div
+                                className="w-full h-full flex items-end gap-1"
+                                initial="hidden"
+                                animate="visible"
+                                transition={{ staggerChildren: 0.1 }}
+                            >
+                                {[40, 60, 50, 75, 65, 85, 90].map((h, i) => (
+                                    <motion.div
+                                        key={i}
+                                        className="w-full bg-primary/50 rounded-t-sm"
+                                        variants={{
+                                            hidden: { y: 20, opacity: 0 },
+                                            visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
+                                        }}
+                                        style={{ height: `${h}%` }}
+                                    />
+                                ))}
+                            </motion.div>
+                        </div>
+                     </div>
+                </div>
+            </motion.div>
           </div>
         </section>
       </main>
