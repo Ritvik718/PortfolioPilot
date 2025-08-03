@@ -4,7 +4,8 @@
 import { parsePortfolio, ParsePortfolioInput, ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
 import { generateTextualInsights, GenerateTextualInsightsInput, GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
-import { getStockDetails, GetStockDetailsInput, GetStockDetailsOutput } from '@/ai/flows/get-stock-details';
+import { getStockDetails } from '@/ai/flows/get-stock-details';
+import type { GetStockDetailsInput, GetStockDetailsOutput } from '@/ai/flows/get-stock-details.types';
 import { searchSymbols, SearchResult } from '@/lib/market-data';
 
 export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput | { error: string }> {
