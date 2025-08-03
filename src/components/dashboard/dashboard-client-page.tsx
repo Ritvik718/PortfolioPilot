@@ -36,16 +36,17 @@ const containerVariants = {
     visible: {
         opacity: 1,
         transition: {
-            staggerChildren: 0.1,
+            staggerChildren: 0.15,
         },
     },
 };
 
 const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 20, opacity: 0, scale: 0.98 },
     visible: {
         y: 0,
         opacity: 1,
+        scale: 1,
         transition: {
             duration: 0.5,
         },

@@ -13,6 +13,7 @@ import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
 import type { UserPortfolioData } from './dashboard-client-page';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export type TextualInsights = {
     insights: string[];
@@ -156,63 +157,70 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
                 </>
             )}
         </Button>
-
-        {analysisResult && (
-            <div className="space-y-4 pt-4" ref={analysisContentRef}>
-                <Separator />
-                 <Accordion type="single" collapsible className="w-full" defaultValue='item-1'>
-                    <AccordionItem value="item-1">
-                        <AccordionTrigger>
-                            <h3 className="font-semibold flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" /> Key Questions Answered</h3>
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-3 text-sm">
-                           <p><strong>Total Value:</strong> {formatCurrency(analysisResult.totalValue)}</p>
-                           <p><strong>Total Investment:</strong> {formatCurrency(analysisResult.totalInvestment)}</p>
-                           <p><strong>Overall Gain/Loss:</strong> {formatCurrency(analysisResult.overallGainLossValue)} ({formatPercent(analysisResult.overallGainLossPercent)}%)</p>
-                           <p><strong>Best Performer:</strong> {analysisResult.bestPerformer.name} ({formatPercent(analysisResult.bestPerformer.returnPercentage)}%)</p>
-                           <p><strong>Biggest Winner:</strong> {analysisResult.biggestWinner.name} ({formatCurrency(analysisResult.biggestWinner.gain)})</p>
-                           <div>
-                                <strong>Asset Allocation:</strong>
-                                <ul className="list-disc pl-5">
-                                    {Object.entries(analysisResult.assetAllocation).map(([category, percentage]) => (
-                                        <li key={category}>{category}: {formatPercent(percentage)}%</li>
-                                    ))}
-                                </ul>
-                           </div>
-                           <p><strong>Underperforming Assets:</strong> {analysisResult.underperformingAssets.map(a => a.name).join(', ') || 'None'}</p>
-                           <p><strong>10% Drop Simulation:</strong> {formatCurrency(analysisResult.marketDropSimulation)}</p>
-                        </AccordionContent>
-                    </AccordionItem>
-                    {(isGeneratingInsights || textualInsights) && (
-                         <AccordionItem value="item-2">
-                             <AccordionTrigger>
-                                 <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Insights &amp; Forecast</h3>
-                             </AccordionTrigger>
-                             <AccordionContent className="space-y-4 text-sm">
-                                {isGeneratingInsights && <Loader2 className="h-5 w-5 animate-spin" />}
-                                {textualInsights && (
-                                    <>
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Key Insights:</h4>
-                                            <ul className="list-disc pl-5 space-y-1">
-                                                {textualInsights.insights.map((insight, index) => (
-                                                    <li key={index}>{insight}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-semibold mb-2">Future Forecast:</h4>
-                                            <p>{textualInsights.forecast}</p>
-                                        </div>
-                                    </>
-                                )}
-                             </AccordionContent>
-                         </AccordionItem>
-                    )}
-                </Accordion>
-            </div>
-        )}
-
+        <AnimatePresence>
+            {analysisResult && (
+                <motion.div 
+                    className="space-y-4 pt-4" 
+                    ref={analysisContentRef}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Separator />
+                     <Accordion type="single" collapsible className="w-full" defaultValue='item-1'>
+                        <AccordionItem value="item-1">
+                            <AccordionTrigger>
+                                <h3 className="font-semibold flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" /> Key Questions Answered</h3>
+                            </AccordionTrigger>
+                            <AccordionContent className="space-y-3 text-sm">
+                               <p><strong>Total Value:</strong> {formatCurrency(analysisResult.totalValue)}</p>
+                               <p><strong>Total Investment:</strong> {formatCurrency(analysisResult.totalInvestment)}</p>
+                               <p><strong>Overall Gain/Loss:</strong> {formatCurrency(analysisResult.overallGainLossValue)} ({formatPercent(analysisResult.overallGainLossPercent)}%)</p>
+                               <p><strong>Best Performer:</strong> {analysisResult.bestPerformer.name} ({formatPercent(analysisResult.bestPerformer.returnPercentage)}%)</p>
+                               <p><strong>Biggest Winner:</strong> {analysisResult.biggestWinner.name} ({formatCurrency(analysisResult.biggestWinner.gain)})</p>
+                               <div>
+                                    <strong>Asset Allocation:</strong>
+                                    <ul className="list-disc pl-5">
+                                        {Object.entries(analysisResult.assetAllocation).map(([category, percentage]) => (
+                                            <li key={category}>{category}: {formatPercent(percentage)}%</li>
+                                        ))}
+                                    </ul>
+                               </div>
+                               <p><strong>Underperforming Assets:</strong> {analysisResult.underperformingAssets.map(a => a.name).join(', ') || 'None'}</p>
+                               <p><strong>10% Drop Simulation:</strong> {formatCurrency(analysisResult.marketDropSimulation)}</p>
+                            </AccordionContent>
+                        </AccordionItem>
+                        {(isGeneratingInsights || textualInsights) && (
+                             <AccordionItem value="item-2">
+                                 <AccordionTrigger>
+                                     <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Insights &amp; Forecast</h3>
+                                 </AccordionTrigger>
+                                 <AccordionContent className="space-y-4 text-sm">
+                                    {isGeneratingInsights && <Loader2 className="h-5 w-5 animate-spin" />}
+                                    {textualInsights && (
+                                        <>
+                                            <div>
+                                                <h4 className="font-semibold mb-2">Key Insights:</h4>
+                                                <ul className="list-disc pl-5 space-y-1">
+                                                    {textualInsights.insights.map((insight, index) => (
+                                                        <li key={index}>{insight}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold mb-2">Future Forecast:</h4>
+                                                <p>{textualInsights.forecast}</p>
+                                            </div>
+                                        </>
+                                    )}
+                                 </AccordionContent>
+                             </AccordionItem>
+                        )}
+                    </Accordion>
+                </motion.div>
+            )}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );

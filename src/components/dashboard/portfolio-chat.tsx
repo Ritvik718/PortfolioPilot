@@ -11,6 +11,8 @@ import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { askPortfolioQuestion } from '@/app/actions';
 import { ScrollArea } from '../ui/scroll-area';
 import { CalculatedInsights } from '@/lib/calculations';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 type PortfolioChatProps = {
     portfolioData: {
@@ -24,11 +26,35 @@ type Message = {
     content: string;
 };
 
+const messageVariants = {
+  hidden: { opacity: 0, scale: 0.8, y: 10 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  }
+};
+
+
 export function PortfolioChat({ portfolioData }: PortfolioChatProps) {
     const [question, setQuestion] = React.useState('');
     const [messages, setMessages] = React.useState<Message[]>([]);
     const [isPending, startTransition] = React.useTransition();
     const { toast } = useToast();
+    const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        if (scrollAreaRef.current) {
+            scrollAreaRef.current.scrollTo({
+                top: scrollAreaRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+    }, [messages]);
 
     const handleQuestionSubmit = async () => {
         if (!question.trim() || !portfolioData) return;
@@ -73,10 +99,17 @@ export function PortfolioChat({ portfolioData }: PortfolioChatProps) {
                 </CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-hidden">
-                <ScrollArea className="h-full pr-4">
+                <ScrollArea className="h-full pr-4" ref={scrollAreaRef}>
                      <div className="space-y-4">
+                        <AnimatePresence>
                         {messages.map((message, index) => (
-                            <div key={index} className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
+                            <motion.div 
+                                key={index} 
+                                className={`flex items-start gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}
+                                variants={messageVariants}
+                                initial="hidden"
+                                animate="visible"
+                            >
                                 {message.role === 'assistant' && (
                                     <div className="bg-primary text-primary-foreground p-2 rounded-full">
                                         <Bot size={20} />
@@ -90,17 +123,23 @@ export function PortfolioChat({ portfolioData }: PortfolioChatProps) {
                                         <User size={20} />
                                     </div>
                                 )}
-                            </div>
+                            </motion.div>
                         ))}
+                        </AnimatePresence>
                          {isPending && (
-                            <div className="flex items-start gap-3">
+                            <motion.div 
+                                className="flex items-start gap-3"
+                                variants={messageVariants}
+                                initial="hidden"
+                                animate="visible"
+                            >
                                  <div className="bg-primary text-primary-foreground p-2 rounded-full">
                                     <Bot size={20} />
                                 </div>
                                 <div className="p-3 rounded-lg bg-card border">
                                     <Loader2 className="h-5 w-5 animate-spin" />
                                 </div>
-                            </div>
+                            </motion.div>
                          )}
                     </div>
                 </ScrollArea>

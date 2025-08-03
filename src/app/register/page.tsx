@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useActionState, useEffect } from 'react';
 import { useFormStatus } from 'react-dom';
+import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -54,49 +55,55 @@ export default function RegisterPage() {
 
   return (
     <div className="flex items-center justify-center min-h-screen py-12">
-      <Card className="mx-auto max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">Sign Up</CardTitle>
-          <CardDescription>
-            Enter your information to create an account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="grid gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="firstName">First name</Label>
-                <Input id="firstName" name="firstName" placeholder="Max" required />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="mx-auto max-w-sm">
+          <CardHeader>
+            <CardTitle className="text-xl">Sign Up</CardTitle>
+            <CardDescription>
+              Enter your information to create an account
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={formAction} className="grid gap-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="firstName">First name</Label>
+                  <Input id="firstName" name="firstName" placeholder="Max" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="lastName">Last name</Label>
+                  <Input id="lastName" name="lastName" placeholder="Robinson" required />
+                </div>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="lastName">Last name</Label>
-                <Input id="lastName" name="lastName" placeholder="Robinson" required />
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                />
               </div>
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <Input id="password" name="password" type="password" required />
+              </div>
+              <SubmitButton />
+            </form>
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{' '}
+              <Link href="/login" className="underline">
+                Sign in
+              </Link>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" name="password" type="password" required />
-            </div>
-            <SubmitButton />
-          </form>
-          <div className="mt-4 text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="underline">
-              Sign in
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
