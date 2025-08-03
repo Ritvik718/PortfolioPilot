@@ -1,25 +1,37 @@
+'use client';
+
 import { db, auth } from '@/lib/firebase';
-import { ref, push, set, get, query, orderByChild } from 'firebase/database';
+import {
+    collection,
+    addDoc,
+    getDocs,
+    query,
+    where,
+    orderBy,
+    limit,
+    serverTimestamp
+} from 'firebase/firestore';
 import type { Transaction } from '@/lib/data';
 
 export async function addTransaction(
-  transaction: Omit<Transaction, 'id' | 'userId'>
+  transactionData: Omit<Transaction, 'id' | 'date'> & { userId: string }
 ): Promise<{ success: boolean; transaction?: Transaction; message?: string }> {
   const user = auth.currentUser;
-  if (!user) {
-    return { success: false, message: 'Authentication required.' };
+  if (!user || user.uid !== transactionData.userId) {
+    return { success: false, message: 'Authentication required or mismatched user.' };
   }
 
   try {
-    const transactionsRef = ref(db, `transactions/${user.uid}`);
-    const newTransactionRef = push(transactionsRef);
-
-    await set(newTransactionRef, transaction);
+    const transactionsRef = collection(db, 'transactions');
+    const docRef = await addDoc(transactionsRef, {
+        ...transactionData,
+        date: serverTimestamp() // Use server timestamp for consistency
+    });
 
     const newTransaction: Transaction = {
-      id: newTransactionRef.key!,
-      userId: user.uid,
-      ...transaction,
+      id: docRef.id,
+      ...transactionData,
+      date: new Date().toISOString(), // Return current date for optimistic update
     };
 
     return { success: true, transaction: newTransaction };
@@ -29,29 +41,34 @@ export async function addTransaction(
   }
 }
 
-
 export async function getTransactions(userId: string): Promise<Transaction[]> {
     if (!userId) {
         return [];
     }
 
     try {
-        const transactionsRef = ref(db, `transactions/${userId}`);
-        const snapshot = await get(query(transactionsRef, orderByChild('date')));
+        const transactionsRef = collection(db, 'transactions');
+        const q = query(
+            transactionsRef,
+            where("userId", "==", userId),
+            orderBy("date", "desc"),
+            limit(50)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        const transactions: Transaction[] = [];
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            transactions.push({
+                id: doc.id,
+                ...data,
+                // Convert Firestore Timestamp to ISO string if needed
+                date: data.date.toDate().toISOString(),
+            } as Transaction);
+        });
         
-        if (snapshot.exists()) {
-            const transactions: Transaction[] = [];
-            snapshot.forEach((childSnapshot) => {
-                transactions.push({
-                    id: childSnapshot.key!,
-                    userId: userId,
-                    ...childSnapshot.val()
-                });
-            });
-            // RTDB returns in ascending order, so we reverse for descending date order
-            return transactions.reverse();
-        }
-        return [];
+        return transactions;
     } catch (error) {
         console.error("Error fetching transactions: ", error);
         throw error; // Re-throw the error to be caught by the caller

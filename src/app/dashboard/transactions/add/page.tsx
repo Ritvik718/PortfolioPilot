@@ -79,13 +79,14 @@ export default function AddTransactionPage() {
 
     try {
         const result = await addTransaction({
+            userId: user.uid,
             assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
             assetName: data.assetName,
             type: data.type,
             quantity: data.quantity,
             pricePerUnit: data.pricePerUnit,
             totalValue: data.quantity * data.pricePerUnit,
-            date: data.date.toISOString(),
+            // date will be handled by the backend function with serverTimestamp
         });
 
         if (result.success) {
@@ -249,7 +250,11 @@ export default function AddTransactionPage() {
                           <Calendar
                             mode="single"
                             selected={field.value}
-                            onSelect={field.onChange}
+                            onSelect={(date) => {
+                                field.onChange(date);
+                                // The Firestore server timestamp will be used,
+                                // but we keep the client date for the form.
+                            }}
                             disabled={(date) =>
                               date > new Date() || date < new Date('1900-01-01')
                             }

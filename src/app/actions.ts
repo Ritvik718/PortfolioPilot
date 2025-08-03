@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { ref, set, get } from 'firebase/database';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -46,8 +46,8 @@ export async function register(prevState: any, formData: FormData) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        const userRef = ref(db, `users/${user.uid}`);
-        await set(userRef, {
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, {
             uid: user.uid,
             firstName,
             lastName,
@@ -62,14 +62,14 @@ export async function register(prevState: any, formData: FormData) {
 
 export async function handleGoogleSignIn(userData: {uid: string, email: string | null, displayName: string | null}) {
     const { uid, email, displayName } = userData;
-    const userRef = ref(db, `users/${uid}`);
+    const userRef = doc(db, 'users', uid);
 
     try {
-        const snapshot = await get(userRef);
-        if (!snapshot.exists()) {
+        const docSnap = await getDoc(userRef);
+        if (!docSnap.exists()) {
             const firstName = displayName ? displayName.split(' ')[0] : '';
             const lastName = displayName ? displayName.split(' ').slice(1).join(' ') : '';
-            await set(userRef, {
+            await setDoc(userRef, {
                 uid,
                 email,
                 firstName,
