@@ -17,6 +17,7 @@ import { Card, CardContent } from '../ui/card';
 import { Sparkles } from 'lucide-react';
 import { PortfolioChat } from './portfolio-chat';
 import { CalculatedInsights } from '@/lib/calculations';
+import { exportPortfolioToPdf } from '@/lib/pdf-export';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -32,26 +33,19 @@ export type UserPortfolioData = {
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
     const [userPortfolioData, setUserPortfolioData] = React.useState<UserPortfolioData | null>(null);
+    const analysisContentRef = React.useRef<HTMLDivElement>(null);
+
 
     const handleAnalysisComplete = (data: UserPortfolioData) => {
         setUserPortfolioData(data);
     };
 
-    const handleExport = () => {
-        if (!userPortfolioData) {
+    const handleExport = async () => {
+        if (!analysisContentRef.current) {
             alert("Please analyze a portfolio first to export data.");
             return;
         }
-
-        const dataStr = JSON.stringify(userPortfolioData, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-
-        const exportFileDefaultName = 'portfolio_analysis.json';
-
-        const linkElement = document.createElement('a');
-        linkElement.setAttribute('href', dataUri);
-        linkElement.setAttribute('download', exportFileDefaultName);
-        linkElement.click();
+        await exportPortfolioToPdf(analysisContentRef.current);
     };
 
     const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
@@ -119,7 +113,10 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
                             )}
                         </div>
                         <div className="flex flex-col gap-6">
-                            <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
+                            <PortfolioAnalysis 
+                                ref={analysisContentRef}
+                                onAnalysisComplete={handleAnalysisComplete} 
+                            />
                             <PortfolioChat portfolioData={userPortfolioData} />
                         </div>
                     </div>

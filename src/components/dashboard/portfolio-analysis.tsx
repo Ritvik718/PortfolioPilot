@@ -22,7 +22,7 @@ type PortfolioAnalysisProps = {
     onAnalysisComplete: (data: {parsed: ParsePortfolioOutput, calculated: CalculatedInsights}) => void;
 }
 
-export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
+export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnalysisProps>(({ onAnalysisComplete }, ref) => {
   const [portfolioData, setPortfolioData] = React.useState('');
   const [analysisResult, setAnalysisResult] = React.useState<CalculatedInsights | null>(null);
   const [textualInsights, setTextualInsights] = React.useState<GenerateTextualInsightsOutput | null>(null);
@@ -148,7 +148,7 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
         </Button>
 
         {analysisResult && (
-            <div className="space-y-4 pt-4">
+            <div className="space-y-4 pt-4" ref={ref}>
                 <Separator />
                  <Accordion type="single" collapsible className="w-full" defaultValue='item-1'>
                     <AccordionItem value="item-1">
@@ -206,4 +206,5 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
       </CardContent>
     </Card>
   );
-}
+});
+PortfolioAnalysis.displayName = "PortfolioAnalysis";
