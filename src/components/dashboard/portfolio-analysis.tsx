@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { getParsedPortfolio } from '@/app/actions';
+import { getParsedPortfolio, getInsights } from '@/app/actions';
 import { Lightbulb, Sparkles, Loader2, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
+import type { GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
 
 type PortfolioAnalysisProps = {
     onAnalysisComplete: (data: ParsePortfolioOutput) => void;
@@ -20,7 +21,9 @@ type PortfolioAnalysisProps = {
 export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
   const [portfolioData, setPortfolioData] = React.useState('');
   const [analysisResult, setAnalysisResult] = React.useState<CalculatedInsights | null>(null);
-  const [isPending, startTransition] = React.useTransition();
+  const [textualInsights, setTextualInsights] = React.useState<GenerateTextualInsightsOutput | null>(null);
+  const [isParsing, setIsParsing] = React.useState(false);
+  const [isGeneratingInsights, setIsGeneratingInsights] = React.useState(false);
   const { toast } = useToast();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,27 +47,46 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
       return;
     }
 
-    startTransition(async () => {
-      const result = await getParsedPortfolio({ portfolioData });
+    setIsParsing(true);
+    setAnalysisResult(null);
+    setTextualInsights(null);
 
-      if (result.error) {
-        toast({
-          variant: 'destructive',
-          title: 'Analysis Failed',
-          description: result.error,
-        });
-        setAnalysisResult(null);
-      } else {
-        const parsedData = result as ParsePortfolioOutput;
-        const calculated = calculateInsights(parsedData);
-        setAnalysisResult(calculated);
-        onAnalysisComplete(parsedData);
-         toast({
-          title: 'Analysis Complete',
-          description: 'Your portfolio insights are ready.',
-        });
-      }
+    const parseResult = await getParsedPortfolio({ portfolioData });
+
+    if (parseResult.error) {
+      toast({
+        variant: 'destructive',
+        title: 'Analysis Failed',
+        description: parseResult.error,
+      });
+      setIsParsing(false);
+      return;
+    }
+    
+    setIsParsing(false);
+    const parsedData = parseResult as ParsePortfolioOutput;
+    const calculated = calculateInsights(parsedData);
+    setAnalysisResult(calculated);
+    onAnalysisComplete(parsedData);
+    
+    toast({
+      title: 'Analysis Complete',
+      description: 'Your portfolio insights are ready.',
     });
+
+    setIsGeneratingInsights(true);
+    const textualResult = await getInsights({ calculatedInsights: JSON.stringify(calculated) });
+    
+    if (textualResult.error) {
+        toast({
+            variant: 'destructive',
+            title: 'Insight Generation Failed',
+            description: textualResult.error,
+        });
+    } else {
+        setTextualInsights(textualResult as GenerateTextualInsightsOutput);
+    }
+    setIsGeneratingInsights(false);
   };
   
   const formatCurrency = (value: number) => {
@@ -79,6 +101,8 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
   const formatPercent = (value: number) => {
       return `${value.toFixed(2)}%`;
   }
+  
+  const isPending = isParsing || isGeneratingInsights;
 
   return (
     <Card className="flex flex-col">
@@ -109,7 +133,7 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
             {isPending ? (
                 <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Analyzing...
+                    {isParsing ? 'Parsing Data...' : 'Generating Insights...'}
                 </>
             ) : (
                  <>
@@ -145,6 +169,32 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
                            <p><strong>10% Drop Simulation:</strong> {formatCurrency(analysisResult.marketDropSimulation)}</p>
                         </AccordionContent>
                     </AccordionItem>
+                    {(isGeneratingInsights || textualInsights) && (
+                         <AccordionItem value="item-2">
+                             <AccordionTrigger>
+                                 <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Insights & Forecast</h3>
+                             </AccordionTrigger>
+                             <AccordionContent className="space-y-4 text-sm">
+                                {isGeneratingInsights && <Loader2 className="h-5 w-5 animate-spin" />}
+                                {textualInsights && (
+                                    <>
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Key Insights:</h4>
+                                            <ul className="list-disc pl-5 space-y-1">
+                                                {textualInsights.insights.map((insight, index) => (
+                                                    <li key={index}>{insight}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 className="font-semibold mb-2">Future Forecast:</h4>
+                                            <p>{textualInsights.forecast}</p>
+                                        </div>
+                                    </>
+                                )}
+                             </AccordionContent>
+                         </AccordionItem>
+                    )}
                 </Accordion>
             </div>
         )}

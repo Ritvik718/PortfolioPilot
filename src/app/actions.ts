@@ -3,6 +3,7 @@
 
 import { parsePortfolio, ParsePortfolioInput, ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
+import { generateTextualInsights, GenerateTextualInsightsInput, GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
 import { auth, db } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
@@ -22,6 +23,19 @@ export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<Pa
     };
   }
 }
+
+export async function getInsights(input: GenerateTextualInsightsInput): Promise<GenerateTextualInsightsOutput | { error: string }> {
+    try {
+        const result = await generateTextualInsights(input);
+        return result;
+    } catch (error) {
+        console.error('Error calling AI flow for insights:', error);
+        return {
+            error: 'Sorry, I encountered an error while generating insights.',
+        };
+    }
+}
+
 
 export async function askPortfolioQuestion(input: PortfolioQAInput): Promise<PortfolioQAOutput | { error: string }> {
     try {
