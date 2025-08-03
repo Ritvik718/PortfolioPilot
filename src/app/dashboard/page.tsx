@@ -1,4 +1,4 @@
-import { getPortfolioData } from '@/lib/mock-data';
+import { getPortfolioData } from '@/lib/portfolio-data';
 import { DashboardClientPage } from '@/components/dashboard/dashboard-client-page';
 
 export default async function DashboardPage() {

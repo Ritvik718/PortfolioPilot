@@ -1,4 +1,3 @@
-
 import type { PortfolioData, Asset } from './data';
 import fetch from 'node-fetch';
 
@@ -42,45 +41,25 @@ function generatePerformanceData(days: number, baseValue: number, volatility: nu
     return data;
 }
 
-const getMockPortfolioData = (): PortfolioData => {
-    const assetsWithValues = baseAssets.map(asset => {
-        const price = asset.category === 'Real Estate' ? mockRealEstateData.price : Math.random() * 500;
-        const change24h = asset.category === 'Real Estate' ? 0 : (Math.random() - 0.5) * 20;
-        return {
-            ...asset,
-            price,
-            change24h,
-            value: asset.holdings * price,
-        };
-    });
-
-    const totalValue = assetsWithValues.reduce((sum, asset) => sum + asset.value, 0);
-    const change24h = assetsWithValues.reduce((sum, asset) => sum + asset.change24h * asset.holdings, 0);
-    const totalValue24hAgo = totalValue - change24h;
-    const change24hPercentage = totalValue24hAgo === 0 ? 0 : (change24h / totalValue24hAgo) * 100;
-
+const getEmptyPortfolioData = (): PortfolioData => {
+    const emptyPerformance = {
+        '1D': [], '7D': [], '30D': [], 'YTD': [], '1Y': []
+    };
     return {
-        totalValue,
-        change24h,
-        change24hPercentage,
-        assets: assetsWithValues,
-        performanceHistory: {
-            '1D': generatePerformanceData(24, totalValue24hAgo, 0.002),
-            '7D': generatePerformanceData(7, totalValue - (change24h * 7), 0.01),
-            '30D': generatePerformanceData(30, totalValue - (change24h * 30), 0.015),
-            'YTD': generatePerformanceData(new Date().getMonth() + 1, 425000, 0.02),
-            '1Y': generatePerformanceData(12, 320000, 0.025),
-        },
+        totalValue: 0,
+        change24h: 0,
+        change24hPercentage: 0,
+        assets: [],
+        performanceHistory: emptyPerformance
     };
 };
 
 export async function getPortfolioData(): Promise<PortfolioData> {
     const apiKey = process.env.FINANCIAL_DATA_API_KEY;
-    const mockPortfolio = getMockPortfolioData();
 
-    if (!apiKey || apiKey === 'd27jhf1r01qloarjcgjgd27jhf1r01qloarjcgk0_placeholder_invalid') {
-        console.warn("Finnhub API key not found or is placeholder. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
-        return mockPortfolio;
+    if (!apiKey || apiKey.includes('_placeholder_') || apiKey === 'd27jdqpr01qloarjc24gd27jdqpr01qloarjc250') {
+        console.warn("Finnhub API key not found or is a placeholder. Returning empty data.");
+        return getEmptyPortfolioData();
     }
 
     try {
@@ -99,15 +78,15 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                 const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
                 
                 if (!response.ok) {
-                    console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Falling back to mock data for this asset.`);
-                    return mockPortfolio.assets.find(a => a.id === asset.id)!;
+                    console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Skipping this asset.`);
+                    return null; // Skip this asset if API call fails
                 }
 
                 const data = await response.json() as any;
                 
                 if (!data || typeof data.c === 'undefined') {
-                   console.error(`Invalid data format received from Finnhub for ${asset.symbol}. Falling back to mock data for this asset.`);
-                   return mockPortfolio.assets.find(a => a.id === asset.id)!;
+                   console.error(`Invalid data format received from Finnhub for ${asset.symbol}. Skipping this asset.`);
+                   return null;
                 }
                 
                 const price = data.c;
@@ -120,12 +99,17 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                     value: asset.holdings * price,
                 };
             } catch (assetError) {
-                console.error(`Failed to fetch data for ${asset.symbol}:`, assetError, `Falling back to mock data for this asset.`);
-                return mockPortfolio.assets.find(a => a.id === asset.id)!;
+                console.error(`Failed to fetch data for ${asset.symbol}:`, assetError, `Skipping this asset.`);
+                return null;
             }
         });
         
-        const updatedAssets = await Promise.all(updatedAssetsPromises);
+        const updatedAssetsResults = await Promise.all(updatedAssetsPromises);
+        const updatedAssets = updatedAssetsResults.filter((asset): asset is Asset => asset !== null);
+
+        if (updatedAssets.length === 0) {
+            return getEmptyPortfolioData();
+        }
         
         const totalValue = updatedAssets.reduce((sum, asset) => sum + asset.value, 0);
         const change24h = updatedAssets.reduce((sum, asset) => sum + (asset.change24h || 0) * asset.holdings, 0);
@@ -147,7 +131,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
         };
 
     } catch (error) {
-        console.error("A critical error occurred while fetching real-time portfolio data. Falling back to mock data.", error);
-        return mockPortfolio;
+        console.error("A critical error occurred while fetching portfolio data. Returning empty data.", error);
+        return getEmptyPortfolioData();
     }
 }
