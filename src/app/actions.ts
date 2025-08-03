@@ -4,6 +4,7 @@
 import { parsePortfolio, ParsePortfolioInput, ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
 import { generateTextualInsights, GenerateTextualInsightsInput, GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
+import { getStockDetails, GetStockDetailsInput, GetStockDetailsOutput } from '@/ai/flows/get-stock-details';
 
 export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput | { error: string }> {
   try {
@@ -39,5 +40,17 @@ export async function askPortfolioQuestion(input: PortfolioQAInput): Promise<Por
         return {
             error: 'Sorry, I encountered an error while processing your request.',
         };
+    }
+}
+
+export async function getStockDetailsAction(input: GetStockDetailsInput): Promise<GetStockDetailsOutput | { error: string }> {
+    try {
+        const result = await getStockDetails(input);
+        return result;
+    } catch (error: any) {
+        console.error('Error getting stock details:', error);
+        return {
+            error: `Sorry, I failed to retrieve details for ${input.symbol}: ${error.message}`,
+        }
     }
 }
