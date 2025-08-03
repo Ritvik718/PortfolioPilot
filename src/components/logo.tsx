@@ -11,7 +11,7 @@ export function Logo({ className }: LogoProps) {
       <div className="bg-primary text-primary-foreground p-2 rounded-md">
         <Rocket className="h-6 w-6" />
       </div>
-      <span className="text-2xl font-bold font-headline text-primary-dark">
+      <span className="text-xl font-bold font-headline">
         PortfolioPilot
       </span>
     </div>
