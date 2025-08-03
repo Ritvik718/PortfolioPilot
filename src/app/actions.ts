@@ -5,6 +5,7 @@ import { parsePortfolio, ParsePortfolioInput, ParsePortfolioOutput } from '@/ai/
 import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
 import { generateTextualInsights, GenerateTextualInsightsInput, GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
 import { getStockDetails, GetStockDetailsInput, GetStockDetailsOutput } from '@/ai/flows/get-stock-details';
+import { searchSymbols, SearchResult } from '@/lib/market-data';
 
 export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput | { error: string }> {
   try {
@@ -51,6 +52,19 @@ export async function getStockDetailsAction(input: GetStockDetailsInput): Promis
         console.error('Error getting stock details:', error);
         return {
             error: `Sorry, I failed to retrieve details for ${input.symbol}: ${error.message}`,
+        }
+    }
+}
+
+export async function searchStocksAction(query: string): Promise<SearchResult[] | { error: string }> {
+    if (!query) return [];
+    try {
+        const results = await searchSymbols(query);
+        return results;
+    } catch (error: any) {
+        console.error('Error searching stocks:', error);
+        return {
+            error: `Sorry, I failed to search for stocks: ${error.message}`,
         }
     }
 }

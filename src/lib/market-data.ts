@@ -20,6 +20,15 @@ export type MarketNews = {
     datetime: number;
 }
 
+export const SearchResultSchema = z.object({
+  description: z.string(),
+  displaySymbol: z.string(),
+  symbol: z.string(),
+  type: z.string(),
+});
+export type SearchResult = z.infer<typeof SearchResultSchema>;
+
+
 // Schema for Company Profile
 export const CompanyProfileSchema = z.object({
   country: z.string().optional(),
@@ -89,11 +98,11 @@ async function finnhubFetch(endpoint: string) {
     const apiKey = getApiKey();
     if (!apiKey) return null;
 
-    await delay(1000); // Respect rate limits
+    // No longer need to delay here as individual calls will be spaced out
     const response = await fetch(`https://finnhub.io/api/v1${endpoint}&token=${apiKey}`);
     if (!response.ok) {
-        console.error(`Finnhub API request for ${endpoint} failed with status ${response.status}.`);
-        return null;
+        // Throw an error to be caught by the calling function
+        throw new Error(`Finnhub API request for ${endpoint} failed with status ${response.status}.`);
     }
     return response.json();
 }
@@ -101,17 +110,23 @@ async function finnhubFetch(endpoint: string) {
 export async function getMagSevenData(): Promise<StockQuote[]> {
     const quotes: StockQuote[] = [];
     for (const stock of MAG_SEVEN_STOCKS) {
-        const data: any = await finnhubFetch(`/quote?symbol=${stock.symbol}`);
-        if (data && typeof data.c !== 'undefined') {
-            quotes.push({
-                symbol: stock.symbol,
-                name: stock.name,
-                price: data.c,
-                change: data.d,
-                changePercent: data.dp,
-            });
-        } else {
-             quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
+        try {
+            await delay(1000); // Respect rate limits
+            const data: any = await finnhubFetch(`/quote?symbol=${stock.symbol}`);
+            if (data && typeof data.c !== 'undefined') {
+                quotes.push({
+                    symbol: stock.symbol,
+                    name: stock.name,
+                    price: data.c,
+                    change: data.d,
+                    changePercent: data.dp,
+                });
+            } else {
+                 quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
+            }
+        } catch (error) {
+            console.error(error);
+            quotes.push({ ...stock, price: 0, change: 0, changePercent: 0 });
         }
     }
     return quotes;
@@ -119,29 +134,34 @@ export async function getMagSevenData(): Promise<StockQuote[]> {
 
 
 export async function getMarketNews(): Promise<MarketNews[]> {
-    const data: any = await finnhubFetch('/news?category=general');
-    if (!data || !Array.isArray(data)) return [];
-    
-    return data.slice(0, 5).map((article: any) => ({
-        id: article.id,
-        headline: article.headline,
-        image: article.image || `https://placehold.co/600x400.png`,
-        source: article.source,
-        summary: article.summary,
-        url: article.url,
-        datetime: article.datetime,
-    }));
+    try {
+        const data: any = await finnhubFetch('/news?category=general');
+        if (!data || !Array.isArray(data)) return [];
+        
+        return data.slice(0, 5).map((article: any) => ({
+            id: article.id,
+            headline: article.headline,
+            image: article.image || `https://placehold.co/600x400.png`,
+            source: article.source,
+            summary: article.summary,
+            url: article.url,
+            datetime: article.datetime,
+        }));
+    } catch (error) {
+        console.error(error);
+        return [];
+    }
 }
 
 export async function getCompanyProfile2(symbol: string): Promise<CompanyProfile | null> {
     const data: any = await finnhubFetch(`/stock/profile2?symbol=${symbol}`);
-    if (!data) return null;
+    if (!data || Object.keys(data).length === 0) return null;
     return CompanyProfileSchema.parse(data);
 }
 
 export async function getRecommendationTrends(symbol: string): Promise<RecommendationTrend[]> {
     const data: any = await finnhubFetch(`/stock/recommendation?symbol=${symbol}`);
-     if (!data || !Array.isArray(data)) return [];
+    if (!data || !Array.isArray(data)) return [];
     return z.array(RecommendationTrendSchema).parse(data);
 }
 
@@ -161,4 +181,10 @@ export async function getBasicFinancials(symbol: string): Promise<BasicFinancial
     };
     
     return BasicFinancialsSchema.parse(financials);
+}
+
+export async function searchSymbols(query: string): Promise<SearchResult[]> {
+    const data: any = await finnhubFetch(`/search?q=${query}`);
+    if (!data || !data.result) return [];
+    return z.array(SearchResultSchema).parse(data.result.filter((r: any) => !r.symbol.includes('.')));
 }
