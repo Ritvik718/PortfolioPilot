@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
@@ -22,7 +22,7 @@ type DashboardClientPageProps = {
     initialTransactions: Transaction[];
 };
 
-function MainDashboard({ portfolioData, initialTransactions }: DashboardClientPageProps) {
+function MainDashboard({ portfolioData }: { portfolioData: PortfolioData | null }) {
     const [user, userLoading] = useAuthState(auth);
     const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
 
@@ -31,10 +31,15 @@ function MainDashboard({ portfolioData, initialTransactions }: DashboardClientPa
             setTransactionsLoading(true);
             getTransactions(user.uid)
                 .then(setTransactions)
+                .catch(console.error)
                 .finally(() => setTransactionsLoading(false));
+        } else if (!user && !userLoading) {
+            // Handle case where user is logged out
+            setTransactions([]);
+            setTransactionsLoading(false);
         }
     }, [user, userLoading, setTransactions, setTransactionsLoading]);
-
+    
     const isLoading = !portfolioData || userLoading;
 
     if (isLoading) {
@@ -58,9 +63,27 @@ function MainDashboard({ portfolioData, initialTransactions }: DashboardClientPa
     }
     
     const hasTransactions = transactions.length > 0;
-    const hasPortfolioData = portfolioData && portfolioData.assets.length > 0;
+    // We check for portfolioData but also consider that real-time data might be empty if API fails.
+    // The main indicator for the welcome screen should be the absence of transactions.
+    const showWelcomeScreen = !transactionsLoading && !hasTransactions;
 
-    return hasTransactions || hasPortfolioData ? (
+
+    return showWelcomeScreen ? (
+        <div className="text-center">
+            <h2 className="text-2xl font-bold tracking-tight">
+                Welcome to your Portfolio
+            </h2>
+            <p className="text-muted-foreground">
+                You have no transactions yet. Add one to get started.
+            </p>
+            <Button asChild className="mt-4">
+                <Link href="/dashboard/transactions/add">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Transaction
+                </Link>
+            </Button>
+        </div>
+    ) : (
           portfolioData && (
             <div className="grid gap-6">
               <OverviewCards data={portfolioData} />
@@ -82,21 +105,6 @@ function MainDashboard({ portfolioData, initialTransactions }: DashboardClientPa
               </div>
             </div>
           )
-        ) : (
-            <div className="text-center">
-                <h2 className="text-2xl font-bold tracking-tight">
-                    Welcome to your Portfolio
-                </h2>
-                <p className="text-muted-foreground">
-                    You have no transactions yet. Add one to get started.
-                </p>
-                <Button asChild className="mt-4">
-                    <Link href="/dashboard/transactions/add">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add Transaction
-                    </Link>
-                </Button>
-            </div>
         );
 }
 
