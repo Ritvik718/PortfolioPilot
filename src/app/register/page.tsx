@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { register } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
 const registerSchema = z
@@ -58,20 +57,13 @@ export default function RegisterPage() {
   });
 
   const onSubmit = async (data: RegisterFormValues) => {
-    const result = await register(data);
-    if (result.success) {
-      toast({
-        title: 'Registration Successful',
-        description: 'You can now log in.',
-      });
-      router.push('/login');
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Registration Failed',
-        description: result.message,
-      });
-    }
+    // TODO: Implement actual registration logic
+    console.log(data);
+    toast({
+      title: 'Registration Successful',
+      description: 'You can now log in.',
+    });
+    router.push('/login');
   };
 
   return (

@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { login } from '@/app/actions';
 import { useRouter } from 'next/navigation';
 
 const loginSchema = z.object({
@@ -45,20 +44,13 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    const result = await login(data);
-    if (result.success) {
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back!',
-      });
-      router.push('/dashboard');
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: result.message,
-      });
-    }
+    // TODO: Implement actual login logic
+    console.log(data);
+    toast({
+      title: 'Login Successful',
+      description: 'Welcome back!',
+    });
+    router.push('/dashboard');
   };
 
   return (

@@ -1,6 +1,7 @@
 'use server';
 
 import { portfolioQA } from '@/ai/flows/portfolio-qa';
+import { useRouter } from 'next/navigation';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -14,16 +15,4 @@ export async function askQuestion(question: string, portfolioData: any) {
     console.error('Error calling AI flow:', error);
     return { error: 'Sorry, I encountered an error while processing your request.' };
   }
-}
-
-export async function login(data: any) {
-    console.log('Login attempt:', data);
-    // TODO: Implement actual login logic
-    return { success: true, message: 'Logged in successfully!' };
-}
-
-export async function register(data: any) {
-    console.log('Register attempt:', data);
-    // TODO: Implement actual registration logic
-    return { success: true, message: 'Registered successfully!' };
 }
