@@ -24,7 +24,7 @@ export type PortfolioData = {
     '1D': PerformanceDataPoint[];
     '7D': PerformanceDataPoint[];
     '30D': PerformanceDataPoint[];
-    YTD: PerformanceDataPoint[];
+    'YTD': PerformanceDataPoint[];
     '1Y': PerformanceDataPoint[];
   };
 };

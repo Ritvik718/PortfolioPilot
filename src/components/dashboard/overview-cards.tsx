@@ -11,9 +11,13 @@ export function OverviewCards({ data }: OverviewCardsProps) {
   const { totalValue, change24h, change24hPercentage } = data;
 
   const topPerformer = [...data.assets].sort(
-    (a, b) =>
-      b.change24h / (b.value - b.change24h) -
-      a.change24h / (a.value - a.change24h)
+    (a, b) => {
+        const aChange = a.value - a.change24h;
+        const bChange = b.value - b.change24h;
+        const aPercentage = aChange === 0 ? 0 : (a.change24h / aChange) * 100;
+        const bPercentage = bChange === 0 ? 0 : (b.change24h / bChange) * 100;
+        return bPercentage - aPercentage;
+    }
   )[0];
 
   const formatCurrency = (value: number) => {

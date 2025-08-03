@@ -47,7 +47,10 @@ export function AssetList({ assets }: AssetListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {assets.map((asset) => (
+            {assets.map((asset) => {
+              const changeValue = asset.value - (asset.holdings * asset.change24h);
+              const percentageChange = changeValue === 0 ? 0 : (asset.holdings * asset.change24h / changeValue) * 100;
+              return (
               <TableRow key={asset.id}>
                 <TableCell>
                   <div className="flex items-center gap-3">
@@ -77,16 +80,12 @@ export function AssetList({ assets }: AssetListProps) {
                   >
                     {asset.change24h >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     <span>
-                      {(
-                        (asset.change24h / (asset.value - asset.change24h)) *
-                        100
-                      ).toFixed(2)}
-                      %
+                      {percentageChange.toFixed(2)}%
                     </span>
                   </div>
                 </TableCell>
               </TableRow>
-            ))}
+            )})}
           </TableBody>
         </Table>
       </CardContent>

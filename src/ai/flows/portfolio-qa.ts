@@ -29,15 +29,19 @@ const prompt = ai.definePrompt({
   name: 'portfolioQAPrompt',
   input: {schema: PortfolioQAInputSchema},
   output: {schema: PortfolioQAOutputSchema},
-  prompt: `You are a financial advisor answering questions about a user's portfolio.
+  prompt: `You are a sophisticated AI financial advisor. Your role is to provide clear, insightful, and accurate answers to questions about a user's investment portfolio.
 
-  Use the following portfolio data to answer the question.
+  Use the following portfolio data (in JSON format) to answer the user's question. The data includes total portfolio value, 24-hour performance changes, a list of assets with their individual details, and performance history over various timeframes.
 
-  Portfolio Data: {{{portfolioData}}}
+  When answering, adopt a helpful and professional tone. If the question is ambiguous, ask for clarification. If the data doesn't support a definitive answer, say so. Your primary goal is to help the user understand their investments better.
 
-  Question: {{{question}}}
+  Portfolio Data:
+  {{{portfolioData}}}
 
-  Answer:`,
+  User's Question:
+  "{{{question}}}"
+
+  Your Answer:`,
 });
 
 const portfolioQAFlow = ai.defineFlow(
