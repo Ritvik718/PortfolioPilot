@@ -57,8 +57,21 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        animate={{ 
+            opacity: 1, 
+            scale: 1, 
+            y: ["0%", "-1.5%", "0%"]
+        }}
+        transition={{ 
+             opacity: { duration: 0.5 },
+             scale: { duration: 0.5 },
+             y: {
+                duration: 5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 0.5
+            }
+        }}
       >
         <Card className="mx-auto max-w-sm">
           <CardHeader>

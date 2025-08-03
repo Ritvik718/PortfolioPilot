@@ -44,11 +44,18 @@ const containerVariants = {
 const itemVariants = {
     hidden: { y: 20, opacity: 0, scale: 0.98 },
     visible: {
-        y: 0,
+        y: ["0%", "-1.5%", "0%"],
         opacity: 1,
         scale: 1,
         transition: {
-            duration: 0.5,
+            y: {
+                duration: 5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+                delay: 1
+            },
+            opacity: { duration: 0.5 },
+            scale: { duration: 0.5 },
         },
     },
 };
