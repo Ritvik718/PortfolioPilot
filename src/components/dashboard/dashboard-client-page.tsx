@@ -16,6 +16,7 @@ import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Card, CardContent } from '../ui/card';
 import { Sparkles } from 'lucide-react';
 import { PortfolioChat } from './portfolio-chat';
+import { CalculatedInsights } from '@/lib/calculations';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -23,15 +24,20 @@ type DashboardClientPageProps = {
     marketNews: MarketNews[];
 };
 
+type UserPortfolioData = {
+    parsed: ParsePortfolioOutput;
+    calculated: CalculatedInsights;
+}
+
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
-    const [userPortfolioData, setUserPortfolioData] = React.useState<ParsePortfolioOutput | null>(null);
+    const [userPortfolioData, setUserPortfolioData] = React.useState<UserPortfolioData | null>(null);
 
-    const handleAnalysisComplete = (data: ParsePortfolioOutput) => {
+    const handleAnalysisComplete = (data: UserPortfolioData) => {
         setUserPortfolioData(data);
     };
 
-    const portfolioHasData = userPortfolioData && userPortfolioData.assets.length > 0;
+    const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
     
     const isLoading = userLoading;
 

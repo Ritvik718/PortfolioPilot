@@ -10,9 +10,13 @@ import { MessageCircle, Loader2, Send, Bot, User } from 'lucide-react';
 import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { askPortfolioQuestion } from '@/app/actions';
 import { ScrollArea } from '../ui/scroll-area';
+import { CalculatedInsights } from '@/lib/calculations';
 
 type PortfolioChatProps = {
-    portfolioData: ParsePortfolioOutput | null;
+    portfolioData: {
+        parsed: ParsePortfolioOutput;
+        calculated: CalculatedInsights;
+    } | null;
 }
 
 type Message = {
@@ -27,7 +31,7 @@ export function PortfolioChat({ portfolioData }: PortfolioChatProps) {
     const { toast } = useToast();
 
     const handleQuestionSubmit = async () => {
-        if (!question.trim()) return;
+        if (!question.trim() || !portfolioData) return;
 
         const newMessages: Message[] = [...messages, { role: 'user', content: question }];
         setMessages(newMessages);
@@ -52,14 +56,14 @@ export function PortfolioChat({ portfolioData }: PortfolioChatProps) {
         });
     }
 
-    const isChatDisabled = !portfolioData || portfolioData.assets.length === 0;
+    const isChatDisabled = !portfolioData;
 
     return (
         <Card className="flex flex-col h-[500px]">
             <CardHeader>
                 <div className="flex items-center gap-2">
                     <MessageCircle className="text-primary h-6 w-6" />
-                    <CardTitle>AI Portfolio Q&A</CardTitle>
+                    <CardTitle>AI Portfolio Q&amp;A</CardTitle>
                 </div>
                 <CardDescription>
                     {isChatDisabled 

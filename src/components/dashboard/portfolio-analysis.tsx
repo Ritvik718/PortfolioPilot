@@ -12,10 +12,14 @@ import { Separator } from '@/components/ui/separator';
 import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
-import type { GenerateTextualInsightsOutput } from '@/ai/flows/generate-textual-insights';
+
+type GenerateTextualInsightsOutput = {
+    insights: string[];
+    forecast: string;
+}
 
 type PortfolioAnalysisProps = {
-    onAnalysisComplete: (data: ParsePortfolioOutput) => void;
+    onAnalysisComplete: (data: {parsed: ParsePortfolioOutput, calculated: CalculatedInsights}) => void;
 }
 
 export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
@@ -67,7 +71,7 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
     const parsedData = parseResult as ParsePortfolioOutput;
     const calculated = calculateInsights(parsedData);
     setAnalysisResult(calculated);
-    onAnalysisComplete(parsedData);
+    onAnalysisComplete({ parsed: parsedData, calculated: calculated });
     
     toast({
       title: 'Analysis Complete',
@@ -172,7 +176,7 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
                     {(isGeneratingInsights || textualInsights) && (
                          <AccordionItem value="item-2">
                              <AccordionTrigger>
-                                 <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Insights & Forecast</h3>
+                                 <h3 className="font-semibold flex items-center gap-2"><Sparkles className="h-5 w-5 text-primary" /> AI Insights &amp; Forecast</h3>
                              </AccordionTrigger>
                              <AccordionContent className="space-y-4 text-sm">
                                 {isGeneratingInsights && <Loader2 className="h-5 w-5 animate-spin" />}

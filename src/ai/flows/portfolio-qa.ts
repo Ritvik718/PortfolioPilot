@@ -12,7 +12,7 @@ import {z} from 'genkit';
 
 const PortfolioQAInputSchema = z.object({
   question: z.string().describe('The question about the portfolio.'),
-  portfolioData: z.string().describe('The portfolio data in JSON format.'),
+  portfolioData: z.string().describe('A JSON string containing both the parsed assets and the calculated insights of the portfolio.'),
 });
 export type PortfolioQAInput = z.infer<typeof PortfolioQAInputSchema>;
 
@@ -31,9 +31,11 @@ const prompt = ai.definePrompt({
   output: {schema: PortfolioQAOutputSchema},
   prompt: `You are a sophisticated AI financial advisor. Your role is to provide clear, insightful, and accurate answers to questions about a user's investment portfolio.
 
-  Use the following portfolio data (in JSON format) to answer the user's question. The data includes total portfolio value, 24-hour performance changes, a list of assets with their individual details, and performance history over various timeframes.
+  Use the following portfolio data (in JSON format) to answer the user's question. This data includes pre-calculated insights (like total value, gains, etc.) and a detailed list of assets.
 
-  When answering, adopt a helpful and professional tone. If the question is ambiguous, ask for clarification. If the data doesn't support a definitive answer, say so. Your primary goal is to help the user understand their investments better.
+  IMPORTANT: When the user asks for a calculated value (like total value, gain/loss, etc.), ALWAYS use the pre-calculated value from the JSON data. Do NOT perform the calculation yourself. Your primary goal is to provide answers based *only* on the data provided.
+
+  If the data doesn't support a definitive answer, say so. Adopt a helpful and professional tone.
 
   Portfolio Data:
   {{{portfolioData}}}
