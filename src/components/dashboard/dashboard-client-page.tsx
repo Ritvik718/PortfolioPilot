@@ -1,59 +1,27 @@
 
 'use client';
 
-import React, { useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import React from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
-import { PlusCircle } from 'lucide-react';
 import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
-import { AssetList } from '@/components/dashboard/asset-list';
 import { PortfolioAnalysis } from '@/components/dashboard/portfolio-analysis';
-import type { PortfolioData, Transaction } from '@/lib/data';
+import type { PortfolioData } from '@/lib/data';
 import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
-import { TransactionList } from '@/components/dashboard/transaction-list';
-import { TransactionProvider, useTransaction } from '@/context/transaction-context';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { getTransactions } from '@/lib/transactions';
-import { useToast } from '@/hooks/use-toast';
 import { MarketOverview } from './market-overview';
 import { MarketNewsFeed } from './market-news';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
-    initialTransactions: Transaction[];
     marketData: StockQuote[];
     marketNews: MarketNews[];
 };
 
 function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
-    const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
-    const { toast } = useToast();
-
-    useEffect(() => {
-        if (user && !userLoading) {
-            setTransactionsLoading(true);
-            getTransactions(user.uid)
-                .then(setTransactions)
-                .catch((error) => {
-                    console.error("Failed to fetch transactions:", error)
-                    toast({
-                        variant: 'destructive',
-                        title: 'Error fetching data',
-                        description: 'Could not load your transactions. Please check your connection and try again.'
-                    })
-                })
-                .finally(() => setTransactionsLoading(false));
-        } else if (!user && !userLoading) {
-            // Handle case where user is logged out
-            setTransactions([]);
-            setTransactionsLoading(false);
-        }
-    }, [user, userLoading, setTransactions, setTransactionsLoading, toast]);
     
     const isLoading = !portfolioData || userLoading;
 
@@ -100,23 +68,15 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
             ) : (
                 portfolioData && (
                     <div className="grid gap-6">
-                    <OverviewCards data={portfolioData} />
-                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                        <div className="xl:col-span-2">
-                        <PerformanceChart data={portfolioData.performanceHistory} />
+                        <OverviewCards data={portfolioData} />
+                        <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                            <div className="xl:col-span-2">
+                            <PerformanceChart data={portfolioData.performanceHistory} />
+                            </div>
+                            <div className="flex flex-col gap-6">
+                                <PortfolioAnalysis />
+                            </div>
                         </div>
-                        <div className="flex flex-col gap-6">
-                        <AssetList assets={portfolioData.assets} />
-                        </div>
-                    </div>
-                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                        <div className="xl:col-span-2">
-                            <TransactionList transactions={transactions} isLoading={transactionsLoading} />
-                        </div>
-                        <div className="flex flex-col gap-6">
-                           <PortfolioAnalysis />
-                        </div>
-                    </div>
                     </div>
                 )
             )}
@@ -127,11 +87,11 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
 
 export function DashboardClientPage(props: DashboardClientPageProps) {
     return (
-        <TransactionProvider initialTransactions={props.initialTransactions}>
+        <>
             <DashboardHeader />
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
                 <MainDashboard {...props} />
             </div>
-        </TransactionProvider>
+        </>
     )
 }

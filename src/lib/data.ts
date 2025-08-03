@@ -28,16 +28,3 @@ export type PortfolioData = {
     '1Y': PerformanceDataPoint[];
   };
 };
-
-export type Transaction = {
-    id: string;
-    userId: string;
-    assetId: string;
-    assetName: string;
-    assetIcon?: string;
-    type: 'buy' | 'sell';
-    quantity: number;
-    pricePerUnit: number;
-    date: string;
-    totalValue: number;
-};
