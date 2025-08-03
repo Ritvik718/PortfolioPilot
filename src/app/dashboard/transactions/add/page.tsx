@@ -36,7 +36,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { addTransaction } from '@/app/actions';
+import { addTransaction } from '@/lib/transactions';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -77,28 +77,36 @@ export default function AddTransactionPage() {
       return;
     }
 
-    const result = await addTransaction({
-        userId: user.uid,
-        assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
-        assetName: data.assetName,
-        type: data.type,
-        quantity: data.quantity,
-        pricePerUnit: data.pricePerUnit,
-        totalValue: data.quantity * data.pricePerUnit,
-        date: data.date.toISOString(),
-    });
-
-    if (result.success) {
-        toast({
-        title: 'Transaction Added',
-        description: `Successfully added ${data.quantity} of ${data.assetName}.`,
+    try {
+        const result = await addTransaction({
+            userId: user.uid,
+            assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
+            assetName: data.assetName,
+            type: data.type,
+            quantity: data.quantity,
+            pricePerUnit: data.pricePerUnit,
+            totalValue: data.quantity * data.pricePerUnit,
+            date: data.date.toISOString(),
         });
-        router.push('/dashboard');
-    } else {
-         toast({
+
+        if (result.success) {
+            toast({
+            title: 'Transaction Added',
+            description: `Successfully added ${data.quantity} of ${data.assetName}.`,
+            });
+            router.push('/dashboard');
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: result.message || 'Failed to add transaction.',
+            });
+        }
+    } catch (e: any) {
+        toast({
             variant: 'destructive',
             title: 'Error',
-            description: result.message || 'Failed to add transaction.',
+            description: e.message || 'An unexpected error occurred.',
         });
     }
   };
