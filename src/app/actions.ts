@@ -28,7 +28,7 @@ export async function askQuestion(question: string, portfolioData: any) {
 
 export async function addTransaction(
     transaction: Omit<Transaction, 'id'>
-) {
+): Promise<{ success: boolean; transaction?: Transaction, message?: string; }> {
     if (!transaction.userId) {
         return { success: false, message: "Authentication required." };
     }
@@ -38,25 +38,16 @@ export async function addTransaction(
             ...transaction,
             date: Timestamp.fromDate(new Date(transaction.date)),
         });
-        const docSnap = await getDoc(docRef);
-        if (!docSnap.exists()) {
-             return { success: false, message: "Failed to retrieve saved transaction." };
-        }
-        const data = docSnap.data();
+
+        // Construct the new transaction object directly, no need to re-fetch.
         const newTransaction: Transaction = {
             id: docRef.id,
-            userId: data.userId,
-            assetId: data.assetId,
-            assetName: data.assetName,
-            type: data.type,
-            quantity: data.quantity,
-            pricePerUnit: data.pricePerUnit,
-            totalValue: data.totalValue,
-            date: data.date.toDate().toISOString(),
+            ...transaction,
         };
 
         return { success: true, transaction: newTransaction };
     } catch (error: any) {
+        console.error("Error adding transaction:", error);
         return { success: false, message: error.message };
     }
 }
