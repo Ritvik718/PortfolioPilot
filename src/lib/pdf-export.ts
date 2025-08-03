@@ -12,7 +12,7 @@ export async function exportPortfolioToPdf(element: HTMLElement) {
         const canvas = await html2canvas(element, {
              scale: 2, // Higher scale for better quality
              useCORS: true, // If you have external images
-             backgroundColor: null, // Use element's background
+             backgroundColor: '#ffffff', // Force a white background for the PDF
         });
 
         const imgData = canvas.toDataURL('image/png');
