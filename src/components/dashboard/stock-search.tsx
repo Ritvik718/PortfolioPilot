@@ -2,7 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
   Command,
   CommandEmpty,
@@ -23,6 +23,7 @@ export function StockSearch() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isDropdownOpen, setDropdownOpen] = React.useState(false);
   const [selectedSymbol, setSelectedSymbol] = React.useState<string | null>(null);
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   React.useEffect(() => {
     if (debouncedQuery) {
@@ -46,6 +47,7 @@ export function StockSearch() {
     setQuery('');
     setDropdownOpen(false);
     setSelectedSymbol(symbol);
+    setDialogOpen(true);
   };
 
   const handleInputFocus = () => {
@@ -60,6 +62,13 @@ export function StockSearch() {
       setDropdownOpen(false);
     }, 150);
   };
+  
+  const handleOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) {
+        setSelectedSymbol(null);
+    }
+  }
 
   return (
     <>
@@ -71,7 +80,7 @@ export function StockSearch() {
               onValueChange={setQuery}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
-              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="h-10"
             />
           {isDropdownOpen && (
             <CommandList className="absolute top-full mt-2 w-full sm:w-64 rounded-md border bg-background shadow-lg z-50">
@@ -97,10 +106,8 @@ export function StockSearch() {
       {selectedSymbol && (
         <StockDetailsDialog 
             symbol={selectedSymbol}
-            open={!!selectedSymbol}
-            onOpenChange={(open) => {
-                if(!open) setSelectedSymbol(null)
-            }}
+            open={isDialogOpen}
+            onOpenChange={handleOpenChange}
         />
       )}
     </>
