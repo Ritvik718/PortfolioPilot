@@ -76,10 +76,11 @@ const getMockPortfolioData = (): PortfolioData => {
 
 export async function getPortfolioData(): Promise<PortfolioData> {
     const apiKey = process.env.FINANCIAL_DATA_API_KEY;
+    const mockPortfolio = getMockPortfolioData();
 
-    if (!apiKey || apiKey === 'YOUR_FINNHUB_API_KEY_HERE' || apiKey === 'd27jdqpr01qloarjc24gd27jdqpr01qloarjc250') {
-        console.warn("Finnhub API key not found or is a placeholder/invalid. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
-        return getMockPortfolioData();
+    if (!apiKey) {
+        console.warn("Finnhub API key not found. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
+        return mockPortfolio;
     }
 
     try {
@@ -99,14 +100,14 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                 
                 if (!response.ok) {
                     console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Falling back to mock data for this asset.`);
-                    return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
+                    return mockPortfolio.assets.find(a => a.id === asset.id)!;
                 }
 
                 const data = await response.json() as any;
                 
                 if (!data || typeof data.c === 'undefined') {
                    console.error(`Invalid data format received from Finnhub for ${asset.symbol}. Falling back to mock data for this asset.`);
-                   return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
+                   return mockPortfolio.assets.find(a => a.id === asset.id)!;
                 }
                 
                 const price = data.c;
@@ -120,7 +121,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                 };
             } catch (assetError) {
                 console.error(`Failed to fetch data for ${asset.symbol}:`, assetError, `Falling back to mock data for this asset.`);
-                return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
+                return mockPortfolio.assets.find(a => a.id === asset.id)!;
             }
         });
         
@@ -147,6 +148,6 @@ export async function getPortfolioData(): Promise<PortfolioData> {
 
     } catch (error) {
         console.error("A critical error occurred while fetching real-time portfolio data. Falling back to mock data.", error);
-        return getMockPortfolioData();
+        return mockPortfolio;
     }
 }
