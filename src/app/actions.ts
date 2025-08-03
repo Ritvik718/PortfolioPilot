@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy, Timestamp, setDoc } from 'firebase/firestore';
+import { ref, push, set, get, query, orderByChild, equalTo, DataSnapshot } from 'firebase/database';
 import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -34,15 +34,15 @@ export async function addTransaction(
     }
 
     try {
-        const docRef = await addDoc(collection(db, 'transactions'), {
-            ...transaction,
-            date: Timestamp.fromDate(new Date(transaction.date)),
-        });
-
+        const transactionsRef = ref(db, `transactions/${transaction.userId}`);
+        const newTransactionRef = push(transactionsRef);
+        
         const newTransaction: Transaction = {
-            id: docRef.id,
+            id: newTransactionRef.key!,
             ...transaction,
         };
+
+        await set(newTransactionRef, transaction); // Save original transaction without the id
 
         return { success: true, transaction: newTransaction };
     } catch (error: any) {
@@ -58,17 +58,21 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
     }
 
     try {
-        const q = query(collection(db, 'transactions'), where('userId', '==', userId), orderBy('date', 'desc'));
-        const querySnapshot = await getDocs(q);
-        const transactions = querySnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-                id: doc.id,
-                ...data,
-                date: data.date.toDate().toISOString(),
-            } as Transaction;
-        });
-        return transactions;
+        const transactionsRef = ref(db, `transactions/${userId}`);
+        const snapshot = await get(query(transactionsRef, orderByChild('date')));
+        
+        if (snapshot.exists()) {
+            const transactions: Transaction[] = [];
+            snapshot.forEach((childSnapshot) => {
+                transactions.push({
+                    id: childSnapshot.key!,
+                    ...childSnapshot.val()
+                });
+            });
+            // RTDB returns in ascending order, so we reverse for descending date order
+            return transactions.reverse();
+        }
+        return [];
     } catch (error) {
         console.error("Error fetching transactions: ", error);
         return [];
@@ -97,9 +101,8 @@ export async function register(prevState: any, formData: FormData) {
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-
-        // Add user's name to Firestore, ensuring the document ID is the user's UID
-        await setDoc(doc(db, "users", user.uid), {
+        const userRef = ref(db, `users/${user.uid}`);
+        await set(userRef, {
             uid: user.uid,
             firstName,
             lastName,
@@ -114,15 +117,14 @@ export async function register(prevState: any, formData: FormData) {
 
 export async function handleGoogleSignIn(userData: {uid: string, email: string | null, displayName: string | null}) {
     const { uid, email, displayName } = userData;
-    const userDocRef = doc(db, "users", uid);
+    const userRef = ref(db, `users/${uid}`);
 
     try {
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-            // User is signing in for the first time, create their document
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
             const firstName = displayName ? displayName.split(' ')[0] : '';
             const lastName = displayName ? displayName.split(' ').slice(1).join(' ') : '';
-            await setDoc(userDocRef, {
+            await set(userRef, {
                 uid,
                 email,
                 firstName,
