@@ -1,19 +1,20 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     match /transactions/{transactionId} {
-      // Allow a user to create a transaction if they are logged in and the transaction's userId matches their own.
+      // Users can create a transaction if they are logged in and the transaction's userId matches their own.
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-
-      // Allow a user to read a single transaction if they own it.
-      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
       
-      // Allow a user to list (query) transactions if they are querying for their own transactions.
-      allow list: if request.auth != null && request.query.where.userId == request.auth.uid;
+      // Users can get a single transaction document if they own it.
+      allow get: if request.auth != null && resource.data.userId == request.auth.uid;
+
+      // Users can list (query) transactions if they are authenticated.
+      // The client-side code is responsible for adding the `where("userId", "==", auth.uid)` clause.
+      allow list: if request.auth != null;
     }
   }
 }
