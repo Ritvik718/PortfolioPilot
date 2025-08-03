@@ -83,52 +83,48 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     }
 
     try {
-        const updatedAssets: Asset[] = await Promise.all(
-            baseAssets.map(async (asset) => {
-                if (asset.category === 'Real Estate') {
-                    return {
-                        ...asset,
-                        price: mockRealEstateData.price,
-                        change24h: mockRealEstateData.change24h,
-                        value: asset.holdings * mockRealEstateData.price,
-                    };
+        const updatedAssetsPromises = baseAssets.map(async (asset) => {
+            if (asset.category === 'Real Estate') {
+                return {
+                    ...asset,
+                    price: mockRealEstateData.price,
+                    change24h: mockRealEstateData.change24h,
+                    value: asset.holdings * mockRealEstateData.price,
+                };
+            }
+
+            try {
+                const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
+                const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
+                
+                if (!response.ok) {
+                    console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Falling back to mock data for this asset.`);
+                    return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
                 }
 
-                try {
-                    const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
-                    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
-                    
-                    if (!response.ok) {
-                        console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}`);
-                        // Fallback to mock for this specific asset
-                        return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
-                    }
-
-                    const data = await response.json() as any;
-                    
-                    if (!data || typeof data.c === 'undefined') {
-                       console.error(`Invalid data format received from Finnhub for ${asset.symbol}`);
-                       // Fallback to mock for this specific asset
-                       return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
-                    }
-                    
-                    const price = data.c;
-                    const change24h = data.d;
-
-                    return {
-                        ...asset,
-                        price: price,
-                        change24h: change24h,
-                        value: asset.holdings * price,
-                    };
-                } catch (assetError) {
-                    console.error(`Failed to fetch data for ${asset.symbol}:`, assetError);
-                    // Fallback to mock for this specific asset
-                    const mockAsset = getMockPortfolioData().assets.find(a => a.id === asset.id)!;
-                    return mockAsset;
+                const data = await response.json() as any;
+                
+                if (!data || typeof data.c === 'undefined') {
+                   console.error(`Invalid data format received from Finnhub for ${asset.symbol}. Falling back to mock data for this asset.`);
+                   return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
                 }
-            })
-        );
+                
+                const price = data.c;
+                const change24h = data.d;
+
+                return {
+                    ...asset,
+                    price: price,
+                    change24h: change24h,
+                    value: asset.holdings * price,
+                };
+            } catch (assetError) {
+                console.error(`Failed to fetch data for ${asset.symbol}:`, assetError, `Falling back to mock data for this asset.`);
+                return getMockPortfolioData().assets.find(a => a.id === asset.id)!;
+            }
+        });
+        
+        const updatedAssets = await Promise.all(updatedAssetsPromises);
         
         const totalValue = updatedAssets.reduce((sum, asset) => sum + asset.value, 0);
         const change24h = updatedAssets.reduce((sum, asset) => sum + (asset.change24h || 0) * asset.holdings, 0);
@@ -150,9 +146,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
         };
 
     } catch (error) {
-        console.error("Error fetching real-time portfolio data, falling back to mock data.", error);
+        console.error("A critical error occurred while fetching real-time portfolio data. Falling back to mock data.", error);
         return getMockPortfolioData();
     }
 }
-
-    
