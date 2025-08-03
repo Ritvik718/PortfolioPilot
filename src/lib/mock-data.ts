@@ -76,8 +76,8 @@ const getMockPortfolioData = (): PortfolioData => {
 export async function getPortfolioData(): Promise<PortfolioData> {
     const apiKey = process.env.FINANCIAL_DATA_API_KEY;
 
-    if (!apiKey || apiKey === 'YOUR_FINNHUB_API_KEY_HERE') {
-        console.warn("Finnhub API key not found or is a placeholder. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
+    if (!apiKey || apiKey === 'YOUR_FINNHUB_API_KEY_HERE' || apiKey === 'd27jdqpr01qloarjc24gd27jdqpr01qloarjc250') {
+        console.warn("Finnhub API key not found or is a placeholder/invalid. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
         return getMockPortfolioData();
     }
 
