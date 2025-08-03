@@ -15,7 +15,8 @@ import { MarketOverview } from './market-overview';
 import { MarketNewsFeed } from './market-news';
 import type { GenerateInsightsOutput } from '@/ai/ai-insights';
 import { Card, CardContent } from '../ui/card';
-import { Lightbulb, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { PortfolioChat } from './portfolio-chat';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -33,8 +34,6 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
 
     const portfolioToDisplay = userPortfolioData ? {
         ...userPortfolioData,
-        // The AI output for assets might not have an 'id' or 'icon', so we adapt it.
-        // For components that need it, we can use the index as a key.
         assets: userPortfolioData.assets.map(asset => ({ ...asset, id: asset.symbol, icon: '' }))
     } : initialPortfolioData;
     
@@ -66,8 +65,9 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
         <div className="grid gap-6">
             <MarketOverview quotes={marketData} />
             <MarketNewsFeed news={marketNews} />
-            <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                 <div className="xl:col-span-2 flex flex-col gap-6">
+            
+            <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
+                 <div className="flex flex-col gap-6">
                     {portfolioToDisplay && portfolioToDisplay.totalValue > 0 ? (
                         <>
                             <OverviewCards data={portfolioToDisplay} />
@@ -87,7 +87,10 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
                         </Card>
                     )}
                 </div>
-                <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
+                <div className="flex flex-col gap-6">
+                     <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
+                     <PortfolioChat portfolioData={userPortfolioData} />
+                </div>
             </div>
         </div>
     );

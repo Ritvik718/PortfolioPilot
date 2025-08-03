@@ -2,6 +2,7 @@
 'use server';
 
 import { generateInsights, GenerateInsightsInput, GenerateInsightsOutput } from '@/ai/ai-insights';
+import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
 import { auth, db } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
@@ -21,6 +22,19 @@ export async function getAIInsights(input: GenerateInsightsInput): Promise<Gener
     };
   }
 }
+
+export async function askPortfolioQuestion(input: PortfolioQAInput): Promise<PortfolioQAOutput | { error: string }> {
+    try {
+        const result = await portfolioQA(input);
+        return result;
+    } catch (error) {
+        console.error('Error calling AI flow:', error);
+        return {
+            error: 'Sorry, I encountered an error while processing your request.',
+        };
+    }
+}
+
 
 export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string;
@@ -88,4 +102,3 @@ export async function logout() {
         return { success: false, message: error.message };
     }
 }
-
