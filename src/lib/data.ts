@@ -10,6 +10,18 @@ export type Asset = {
   icon: string;
 };
 
+// Represents an asset as analyzed by the AI from user-uploaded data.
+// It's a simpler version of the original Asset type.
+export type AnalyzedAsset = {
+  name: string;
+  symbol: string;
+  category: 'Stock' | 'Crypto' | 'Real Estate';
+  holdings: number;
+  value: number;
+  change24h: number;
+};
+
+
 export type PerformanceDataPoint = {
   date: string;
   value: number;

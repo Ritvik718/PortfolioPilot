@@ -9,15 +9,15 @@ import { useToast } from '@/hooks/use-toast';
 import { getAIInsights } from '@/app/actions';
 import { Lightbulb, Sparkles, Loader2, ListTree, AreaChart } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import type { GenerateInsightsOutput } from '@/ai/ai-insights';
 
-type AnalysisResult = {
-  insights: string[];
-  forecast: string;
-};
+type PortfolioAnalysisProps = {
+    onAnalysisComplete: (data: GenerateInsightsOutput) => void;
+}
 
-export function PortfolioAnalysis() {
+export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
   const [portfolioData, setPortfolioData] = React.useState('');
-  const [analysisResult, setAnalysisResult] = React.useState<AnalysisResult | null>(null);
+  const [analysisResult, setAnalysisResult] = React.useState<GenerateInsightsOutput | null>(null);
   const [isPending, startTransition] = React.useTransition();
   const { toast } = useToast();
 
@@ -53,7 +53,9 @@ export function PortfolioAnalysis() {
         });
         setAnalysisResult(null);
       } else {
-        setAnalysisResult(result as AnalysisResult);
+        const structuredResult = result as GenerateInsightsOutput;
+        setAnalysisResult(structuredResult);
+        onAnalysisComplete(structuredResult);
          toast({
           title: 'Analysis Complete',
           description: 'Your portfolio insights are ready.',

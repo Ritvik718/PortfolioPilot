@@ -1,21 +1,27 @@
-import type { PortfolioData } from '@/lib/data';
+import type { PortfolioData, AnalyzedAsset } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, TrendingUp, TrendingDown, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// This component can now accept either the original mock PortfolioData or the AI-generated data.
 type OverviewCardsProps = {
-  data: PortfolioData;
+  data: (PortfolioData & { assets: (PortfolioData['assets'][0] | AnalyzedAsset)[] });
 };
 
 export function OverviewCards({ data }: OverviewCardsProps) {
-  const { totalValue, change24h, change24hPercentage } = data;
+  const { totalValue, change24h, change24hPercentage, assets } = data;
 
-  const topPerformer = [...data.assets].sort(
+  // Handle case where there might be no assets
+  if (!assets || assets.length === 0) {
+    return null;
+  }
+
+  const topPerformer = [...assets].sort(
     (a, b) => {
-        const aChange = a.value - a.change24h;
-        const bChange = b.value - b.change24h;
-        const aPercentage = aChange === 0 ? 0 : (a.change24h / aChange) * 100;
-        const bPercentage = bChange === 0 ? 0 : (b.change24h / bChange) * 100;
+        const aPreviousValue = a.value - a.change24h;
+        const bPreviousValue = b.value - b.change24h;
+        const aPercentage = aPreviousValue === 0 ? 0 : (a.change24h / aPreviousValue) * 100;
+        const bPercentage = bPreviousValue === 0 ? 0 : (b.change24h / bPreviousValue) * 100;
         return bPercentage - aPercentage;
     }
   )[0];
@@ -29,11 +35,11 @@ export function OverviewCards({ data }: OverviewCardsProps) {
     }).format(value);
   };
 
-  const topPerformerChange = topPerformer.value - topPerformer.change24h;
+  const topPerformerPreviousValue = topPerformer.value - topPerformer.change24h;
   const topPerformerChangePercentage =
-    topPerformerChange === 0
+    topPerformerPreviousValue === 0
       ? 0
-      : (topPerformer.change24h / topPerformerChange) * 100;
+      : (topPerformer.change24h / topPerformerPreviousValue) * 100;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

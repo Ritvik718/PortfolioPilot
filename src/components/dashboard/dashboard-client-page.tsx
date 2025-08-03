@@ -13,6 +13,9 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { MarketOverview } from './market-overview';
 import { MarketNewsFeed } from './market-news';
+import type { GenerateInsightsOutput } from '@/ai/ai-insights';
+import { Card, CardContent } from '../ui/card';
+import { Lightbulb, Sparkles } from 'lucide-react';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -20,10 +23,22 @@ type DashboardClientPageProps = {
     marketNews: MarketNews[];
 };
 
-function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
+function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
+    const [userPortfolioData, setUserPortfolioData] = React.useState<GenerateInsightsOutput | null>(null);
+
+    const handleAnalysisComplete = (data: GenerateInsightsOutput) => {
+        setUserPortfolioData(data);
+    };
+
+    const portfolioToDisplay = userPortfolioData ? {
+        ...userPortfolioData,
+        // The AI output for assets might not have an 'id' or 'icon', so we adapt it.
+        // For components that need it, we can use the index as a key.
+        assets: userPortfolioData.assets.map(asset => ({ ...asset, id: asset.symbol, icon: '' }))
+    } : initialPortfolioData;
     
-    const isLoading = !portfolioData || userLoading;
+    const isLoading = userLoading;
 
     if (isLoading) {
         return (
@@ -46,40 +61,34 @@ function MainDashboard({ portfolioData, marketData, marketNews }: { portfolioDat
             </div>
         )
     }
-    
-    // Welcome screen can now be for analyzing the portfolio
-    const showWelcomeScreen = !portfolioData?.totalValue;
-
 
     return (
         <div className="grid gap-6">
             <MarketOverview quotes={marketData} />
             <MarketNewsFeed news={marketNews} />
-            {showWelcomeScreen ? (
-                <div className="text-center py-16">
-                    <h2 className="text-2xl font-bold tracking-tight">
-                        Welcome to your Portfolio
-                    </h2>
-                    <p className="text-muted-foreground">
-                        Upload your portfolio data to get started with AI analysis.
-                    </p>
-                    <PortfolioAnalysis />
+            <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                 <div className="xl:col-span-2 flex flex-col gap-6">
+                    {portfolioToDisplay && portfolioToDisplay.totalValue > 0 ? (
+                        <>
+                            <OverviewCards data={portfolioToDisplay} />
+                            <PerformanceChart data={portfolioToDisplay.performanceHistory} />
+                        </>
+                    ) : (
+                         <Card className="h-full flex flex-col items-center justify-center text-center p-8">
+                            <CardContent>
+                                <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
+                                <h2 className="text-2xl font-bold tracking-tight">
+                                    Analyze Your Portfolio
+                                </h2>
+                                <p className="text-muted-foreground">
+                                    Upload your portfolio data to see your personalized dashboard and get AI insights.
+                                </p>
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
-            ) : (
-                portfolioData && (
-                    <div className="grid gap-6">
-                        <OverviewCards data={portfolioData} />
-                        <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                            <div className="xl:col-span-2">
-                            <PerformanceChart data={portfolioData.performanceHistory} />
-                            </div>
-                            <div className="flex flex-col gap-6">
-                                <PortfolioAnalysis />
-                            </div>
-                        </div>
-                    </div>
-                )
-            )}
+                <PortfolioAnalysis onAnalysisComplete={handleAnalysisComplete} />
+            </div>
         </div>
     );
 }
@@ -90,7 +99,11 @@ export function DashboardClientPage(props: DashboardClientPageProps) {
         <>
             <DashboardHeader />
             <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
-                <MainDashboard {...props} />
+                <MainDashboard 
+                    initialPortfolioData={props.portfolioData} 
+                    marketData={props.marketData}
+                    marketNews={props.marketNews}
+                />
             </div>
         </>
     )

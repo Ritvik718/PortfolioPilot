@@ -1,7 +1,7 @@
 
 'use server';
 
-import { generateInsights, GenerateInsightsInput } from '@/ai/ai-insights';
+import { generateInsights, GenerateInsightsInput, GenerateInsightsOutput } from '@/ai/ai-insights';
 import { auth, db } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
-export async function getAIInsights(input: GenerateInsightsInput) {
+export async function getAIInsights(input: GenerateInsightsInput): Promise<GenerateInsightsOutput | { error: string }> {
   try {
     const result = await generateInsights(input);
     return result;
@@ -88,3 +88,4 @@ export async function logout() {
         return { success: false, message: error.message };
     }
 }
+
