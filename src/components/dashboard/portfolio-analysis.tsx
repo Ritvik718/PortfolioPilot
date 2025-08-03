@@ -12,23 +12,27 @@ import { Separator } from '@/components/ui/separator';
 import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
+import type { UserPortfolioData } from './dashboard-client-page';
 
-type GenerateTextualInsightsOutput = {
+export type TextualInsights = {
     insights: string[];
     forecast: string;
 }
 
 type PortfolioAnalysisProps = {
-    onAnalysisComplete: (data: {parsed: ParsePortfolioOutput, calculated: CalculatedInsights}) => void;
+    onAnalysisComplete: (data: { portfolio: UserPortfolioData, insights: TextualInsights | null }) => void;
 }
 
 export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnalysisProps>(({ onAnalysisComplete }, ref) => {
   const [portfolioData, setPortfolioData] = React.useState('');
   const [analysisResult, setAnalysisResult] = React.useState<CalculatedInsights | null>(null);
-  const [textualInsights, setTextualInsights] = React.useState<GenerateTextualInsightsOutput | null>(null);
+  const [textualInsights, setTextualInsights] = React.useState<TextualInsights | null>(null);
   const [isParsing, setIsParsing] = React.useState(false);
   const [isGeneratingInsights, setIsGeneratingInsights] = React.useState(false);
   const { toast } = useToast();
+  const analysisContentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useImperativeHandle(ref, () => analysisContentRef.current as HTMLDivElement);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -71,7 +75,6 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
     const parsedData = parseResult as ParsePortfolioOutput;
     const calculated = calculateInsights(parsedData);
     setAnalysisResult(calculated);
-    onAnalysisComplete({ parsed: parsedData, calculated: calculated });
     
     toast({
       title: 'Analysis Complete',
@@ -80,6 +83,7 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
 
     setIsGeneratingInsights(true);
     const textualResult = await getInsights({ calculatedInsights: JSON.stringify(calculated) });
+    let finalInsights: TextualInsights | null = null;
     
     if (textualResult.error) {
         toast({
@@ -88,9 +92,15 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
             description: textualResult.error,
         });
     } else {
-        setTextualInsights(textualResult as GenerateTextualInsightsOutput);
+        finalInsights = textualResult as TextualInsights;
+        setTextualInsights(finalInsights);
     }
     setIsGeneratingInsights(false);
+    
+    onAnalysisComplete({ 
+        portfolio: { parsed: parsedData, calculated: calculated },
+        insights: finalInsights 
+    });
   };
   
   const formatCurrency = (value: number) => {
@@ -148,7 +158,7 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
         </Button>
 
         {analysisResult && (
-            <div className="space-y-4 pt-4" ref={ref}>
+            <div className="space-y-4 pt-4" ref={analysisContentRef}>
                 <Separator />
                  <Accordion type="single" collapsible className="w-full" defaultValue='item-1'>
                     <AccordionItem value="item-1">

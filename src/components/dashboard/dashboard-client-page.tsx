@@ -4,7 +4,7 @@
 import React from 'react';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
-import { PortfolioAnalysis } from '@/components/dashboard/portfolio-analysis';
+import { PortfolioAnalysis, TextualInsights } from '@/components/dashboard/portfolio-analysis';
 import type { PortfolioData } from '@/lib/data';
 import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,19 +33,20 @@ export type UserPortfolioData = {
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
     const [userPortfolioData, setUserPortfolioData] = React.useState<UserPortfolioData | null>(null);
-    const analysisContentRef = React.useRef<HTMLDivElement>(null);
+    const [textualInsights, setTextualInsights] = React.useState<TextualInsights | null>(null);
 
 
-    const handleAnalysisComplete = (data: UserPortfolioData) => {
-        setUserPortfolioData(data);
+    const handleAnalysisComplete = (data: { portfolio: UserPortfolioData, insights: TextualInsights | null }) => {
+        setUserPortfolioData(data.portfolio);
+        setTextualInsights(data.insights)
     };
 
     const handleExport = async () => {
-        if (!analysisContentRef.current) {
+        if (!userPortfolioData || !textualInsights) {
             alert("Please analyze a portfolio first to export data.");
             return;
         }
-        await exportPortfolioToPdf(analysisContentRef.current);
+        await exportPortfolioToPdf(userPortfolioData, textualInsights);
     };
 
     const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
@@ -114,7 +115,6 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
                         </div>
                         <div className="flex flex-col gap-6">
                             <PortfolioAnalysis 
-                                ref={analysisContentRef}
                                 onAnalysisComplete={handleAnalysisComplete} 
                             />
                             <PortfolioChat portfolioData={userPortfolioData} />
