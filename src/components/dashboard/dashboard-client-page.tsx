@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -10,6 +11,7 @@ import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { AssetList } from '@/components/dashboard/asset-list';
 import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
 import type { PortfolioData, Transaction } from '@/lib/data';
+import type { StockQuote } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionList } from '@/components/dashboard/transaction-list';
 import { TransactionProvider, useTransaction } from '@/context/transaction-context';
@@ -17,13 +19,15 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { getTransactions } from '@/lib/transactions';
 import { useToast } from '@/hooks/use-toast';
+import { MarketOverview } from './market-overview';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
     initialTransactions: Transaction[];
+    marketData: StockQuote[];
 };
 
-function MainDashboard({ portfolioData }: { portfolioData: PortfolioData | null }) {
+function MainDashboard({ portfolioData, marketData }: { portfolioData: PortfolioData | null, marketData: StockQuote[] }) {
     const [user, userLoading] = useAuthState(auth);
     const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
     const { toast } = useToast();
@@ -54,6 +58,7 @@ function MainDashboard({ portfolioData }: { portfolioData: PortfolioData | null 
     if (isLoading) {
         return (
             <div className="grid gap-6">
+                <Skeleton className="h-[148px] w-full" />
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <Skeleton className="h-[126px] w-full" />
                     <Skeleton className="h-[126px] w-full" />
@@ -77,44 +82,49 @@ function MainDashboard({ portfolioData }: { portfolioData: PortfolioData | null 
     const showWelcomeScreen = !transactionsLoading && !hasTransactions;
 
 
-    return showWelcomeScreen ? (
-        <div className="text-center">
-            <h2 className="text-2xl font-bold tracking-tight">
-                Welcome to your Portfolio
-            </h2>
-            <p className="text-muted-foreground">
-                You have no transactions yet. Add one to get started.
-            </p>
-            <Button asChild className="mt-4">
-                <Link href="/dashboard/transactions/add">
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Transaction
-                </Link>
-            </Button>
+    return (
+        <div className="grid gap-6">
+            <MarketOverview quotes={marketData} />
+            {showWelcomeScreen ? (
+                <div className="text-center py-16">
+                    <h2 className="text-2xl font-bold tracking-tight">
+                        Welcome to your Portfolio
+                    </h2>
+                    <p className="text-muted-foreground">
+                        You have no transactions yet. Add one to get started.
+                    </p>
+                    <Button asChild className="mt-4">
+                        <Link href="/dashboard/transactions/add">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Add Transaction
+                        </Link>
+                    </Button>
+                </div>
+            ) : (
+                portfolioData && (
+                    <div className="grid gap-6">
+                    <OverviewCards data={portfolioData} />
+                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                        <div className="xl:col-span-2">
+                        <PerformanceChart data={portfolioData.performanceHistory} />
+                        </div>
+                        <div className="flex flex-col gap-6">
+                        <AssetList assets={portfolioData.assets} />
+                        </div>
+                    </div>
+                    <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
+                        <div className="xl:col-span-2">
+                            <TransactionList transactions={transactions} isLoading={transactionsLoading} />
+                        </div>
+                        <div className="flex flex-col gap-6">
+                            <AIChatWidget portfolioData={portfolioData} />
+                        </div>
+                    </div>
+                    </div>
+                )
+            )}
         </div>
-    ) : (
-          portfolioData && (
-            <div className="grid gap-6">
-              <OverviewCards data={portfolioData} />
-              <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                <div className="xl:col-span-2">
-                   <PerformanceChart data={portfolioData.performanceHistory} />
-                </div>
-                <div className="flex flex-col gap-6">
-                  <AssetList assets={portfolioData.assets} />
-                </div>
-              </div>
-               <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
-                  <div className="xl:col-span-2">
-                      <TransactionList transactions={transactions} isLoading={transactionsLoading} />
-                  </div>
-                  <div className="flex flex-col gap-6">
-                      <AIChatWidget portfolioData={portfolioData} />
-                  </div>
-              </div>
-            </div>
-          )
-        );
+    );
 }
 
 
