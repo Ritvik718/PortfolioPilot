@@ -52,6 +52,7 @@ export function StockDetailsDialog({ symbol, open, onOpenChange }: StockDetailsD
     if (open && symbol) {
       setIsLoading(true);
       setError(null);
+      setDetails(null);
       getStockDetailsAction({ symbol })
         .then((result) => {
           if ('error' in result) {
