@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { Logo } from '../logo';
 import Link from 'next/link';
-import { StockSearch } from './stock-search';
 
 type DashboardHeaderProps = {
   onExport: () => void;
@@ -41,7 +40,7 @@ export function DashboardHeader({ onExport }: DashboardHeaderProps) {
         <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
             <h1 className="text-2xl font-headline font-semibold hidden md:block">Dashboard</h1>
             <div className="ml-auto flex-1 sm:flex-initial">
-              <StockSearch />
+              {/* Stock Search was here */}
             </div>
             <Button variant="default" size="sm" onClick={onExport}>
                 <FileDown className="mr-2 h-4 w-4" />

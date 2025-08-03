@@ -20,15 +20,6 @@ export type MarketNews = {
     datetime: number;
 }
 
-export const SearchResultSchema = z.object({
-  description: z.string(),
-  displaySymbol: z.string(),
-  symbol: z.string(),
-  type: z.string(),
-});
-export type SearchResult = z.infer<typeof SearchResultSchema>;
-
-
 // Schema for Company Profile
 export const CompanyProfileSchema = z.object({
   country: z.string().optional(),
@@ -181,10 +172,4 @@ export async function getBasicFinancials(symbol: string): Promise<BasicFinancial
     };
     
     return BasicFinancialsSchema.parse(financials);
-}
-
-export async function searchSymbols(query: string): Promise<SearchResult[]> {
-    const data: any = await finnhubFetch(`/search?q=${query}`);
-    if (!data || !data.result) return [];
-    return z.array(SearchResultSchema).parse(data.result.filter((r: any) => !r.symbol.includes('.')));
 }
