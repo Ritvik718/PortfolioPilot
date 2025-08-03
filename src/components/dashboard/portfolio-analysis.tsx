@@ -9,9 +9,10 @@ import { useToast } from '@/hooks/use-toast';
 import { getParsedPortfolio, getInsights } from '@/app/actions';
 import { Lightbulb, Sparkles, Loader2, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
+import type { ParsePortfolioOutput, GenerateTextualInsightsOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
 import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
+<<<<<<< HEAD
 import type { UserPortfolioData } from './dashboard-client-page';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -22,6 +23,13 @@ export type TextualInsights = {
 
 type PortfolioAnalysisProps = {
     onAnalysisComplete: (data: { portfolio: UserPortfolioData, insights: TextualInsights | null }) => void;
+=======
+import type { TextualInsights, UserPortfolioData } from './dashboard-client-page';
+
+
+type PortfolioAnalysisProps = {
+    onAnalysisComplete: (data: UserPortfolioData, insights: TextualInsights) => void;
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
 }
 
 export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnalysisProps>(({ onAnalysisComplete }, ref) => {
@@ -92,9 +100,16 @@ export const PortfolioAnalysis = React.forwardRef<HTMLDivElement, PortfolioAnaly
             title: 'Insight Generation Failed',
             description: textualResult.error,
         });
+         onAnalysisComplete({ parsed: parsedData, calculated: calculated }, { insights: [], forecast: "" });
     } else {
+<<<<<<< HEAD
         finalInsights = textualResult as TextualInsights;
         setTextualInsights(finalInsights);
+=======
+        const insights = textualResult as GenerateTextualInsightsOutput;
+        setTextualInsights(insights);
+        onAnalysisComplete({ parsed: parsedData, calculated: calculated }, insights);
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
     }
     setIsGeneratingInsights(false);
     

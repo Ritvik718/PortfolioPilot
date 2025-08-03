@@ -24,6 +24,12 @@ const ParsePortfolioOutputSchema = z.object({
 });
 export type ParsePortfolioOutput = z.infer<typeof ParsePortfolioOutputSchema>;
 
+const GenerateTextualInsightsOutputSchema = z.object({
+  insights: z.array(z.string()).describe("3-5 concise, data-driven insights about the portfolio's strengths and weaknesses."),
+  forecast: z.string().describe("A brief, one-paragraph forecast of the portfolio's potential future performance based on the provided data."),
+});
+export type GenerateTextualInsightsOutput = z.infer<typeof GenerateTextualInsightsOutputSchema>;
+
 
 export async function parsePortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput> {
   return parsePortfolioFlow(input);

@@ -4,8 +4,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
+<<<<<<< HEAD
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { PortfolioAnalysis, TextualInsights } from '@/components/dashboard/portfolio-analysis';
+=======
+import { PortfolioAnalysis } from '@/components/dashboard/portfolio-analysis';
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
 import type { PortfolioData } from '@/lib/data';
 import type { StockQuote, MarketNews } from '@/lib/market-data';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -18,7 +22,13 @@ import { Card, CardContent } from '../ui/card';
 import { Sparkles } from 'lucide-react';
 import { PortfolioChat } from './portfolio-chat';
 import { CalculatedInsights } from '@/lib/calculations';
+<<<<<<< HEAD
 import { exportPortfolioToPdf } from '@/lib/pdf-export';
+=======
+import { generatePdf } from '@/lib/pdf-export';
+import { toast } from '@/hooks/use-toast';
+
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -31,6 +41,7 @@ export type UserPortfolioData = {
     calculated: CalculatedInsights;
 }
 
+<<<<<<< HEAD
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -60,6 +71,12 @@ const itemVariants = {
     },
 };
 
+=======
+export type TextualInsights = {
+    insights: string[];
+    forecast: string;
+}
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
 
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
@@ -67,17 +84,48 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
     const [textualInsights, setTextualInsights] = React.useState<TextualInsights | null>(null);
 
 
+<<<<<<< HEAD
     const handleAnalysisComplete = (data: { portfolio: UserPortfolioData, insights: TextualInsights | null }) => {
         setUserPortfolioData(data.portfolio);
         setTextualInsights(data.insights)
+=======
+    const handleAnalysisComplete = (data: UserPortfolioData, insights: TextualInsights) => {
+        setUserPortfolioData(data);
+        setTextualInsights(insights);
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
     };
 
     const handleExport = async () => {
         if (!userPortfolioData || !textualInsights) {
+<<<<<<< HEAD
             alert("Please analyze a portfolio first to export data.");
             return;
         }
         await exportPortfolioToPdf(userPortfolioData, textualInsights);
+=======
+            toast({
+                variant: "destructive",
+                title: "No data to export",
+                description: "Please analyze a portfolio first to export data.",
+            });
+            return;
+        }
+
+        try {
+            await generatePdf(userPortfolioData, textualInsights);
+            toast({
+                title: "Export Successful",
+                description: "Your PDF has been downloaded.",
+            });
+        } catch (error) {
+            console.error("Failed to generate PDF:", error);
+            toast({
+                variant: "destructive",
+                title: "Export Failed",
+                description: "An error occurred while generating the PDF.",
+            });
+        }
+>>>>>>> 9759cfc0c8d8b76ef37fbbf311e46f9c3ae33b2b
     };
 
     const portfolioHasData = userPortfolioData && userPortfolioData.parsed.assets.length > 0;
