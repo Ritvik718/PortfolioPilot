@@ -1,6 +1,7 @@
 
 'use client';
 
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -18,6 +19,18 @@ type MarketOverviewProps = {
   quotes: StockQuote[];
 };
 
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      delay: i * 0.05,
+      duration: 0.3,
+    },
+  }),
+};
+
 export function MarketOverview({ quotes }: MarketOverviewProps) {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -33,8 +46,15 @@ export function MarketOverview({ quotes }: MarketOverviewProps) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4 text-center">
-            {quotes.map((stock) => (
-                <div key={stock.symbol} className="p-2 rounded-lg bg-muted/50">
+            {quotes.map((stock, index) => (
+                <motion.div 
+                  key={stock.symbol} 
+                  className="p-2 rounded-lg bg-muted/50"
+                  custom={index}
+                  variants={cardVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
                     <p className="font-bold text-lg">{stock.symbol}</p>
                     <p className="text-sm font-mono">{formatCurrency(stock.price)}</p>
                     <div
@@ -48,7 +68,7 @@ export function MarketOverview({ quotes }: MarketOverviewProps) {
                             {stock.change.toFixed(2)} ({stock.changePercent.toFixed(2)}%)
                         </span>
                     </div>
-                </div>
+                </motion.div>
             ))}
         </div>
       </CardContent>

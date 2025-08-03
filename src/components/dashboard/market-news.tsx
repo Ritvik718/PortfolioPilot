@@ -3,6 +3,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import type { MarketNews } from '@/lib/market-data';
 import { Newspaper } from 'lucide-react';
@@ -16,6 +17,17 @@ import {
 
 type MarketNewsFeedProps = {
   news: MarketNews[];
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        transition: {
+            duration: 0.4,
+        },
+    },
 };
 
 export function MarketNewsFeed({ news }: MarketNewsFeedProps) {
@@ -49,7 +61,13 @@ export function MarketNewsFeed({ news }: MarketNewsFeedProps) {
                 <CarouselContent>
                     {news.map((article) => (
                         <CarouselItem key={article.id} className="md:basis-1/2 lg:basis-1/3">
-                            <div className="p-1 h-full">
+                           <motion.div 
+                             className="p-1 h-full"
+                             variants={itemVariants}
+                             initial="hidden"
+                             whileInView="visible"
+                             viewport={{ once: true }}
+                           >
                                 <Card className="h-full flex flex-col">
                                     <CardHeader>
                                         <div className="aspect-video relative">
@@ -75,7 +93,7 @@ export function MarketNewsFeed({ news }: MarketNewsFeedProps) {
                                         </Link>
                                     </CardFooter>
                                 </Card>
-                            </div>
+                            </motion.div>
                         </CarouselItem>
                     ))}
                 </CarouselContent>
