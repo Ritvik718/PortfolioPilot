@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Logo } from '@/components/logo';
 import { TransactionProvider } from '@/context/transaction-context';
+import { LogoutButton } from '@/components/dashboard/logout-button';
 
 
 export default function DashboardLayout({
@@ -64,10 +65,7 @@ export default function DashboardLayout({
             <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton href="/" tooltip="Logout">
-                        <LogOut />
-                        <span>Logout</span>
-                    </SidebarMenuButton>
+                   <LogoutButton />
                 </SidebarMenuItem>
             </SidebarMenu>
             <div className="flex items-center gap-3 p-2 rounded-md transition-colors">

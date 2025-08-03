@@ -5,6 +5,7 @@ import { auth } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  signOut,
 } from 'firebase/auth';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -47,5 +48,14 @@ export async function register(prevState: any, formData: FormData) {
         return { message: 'Registration successful' };
     } catch (error: any) {
         return { message: error.message };
+    }
+}
+
+export async function logout() {
+    try {
+        await signOut(auth);
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
 }
