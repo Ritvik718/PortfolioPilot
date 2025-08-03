@@ -7,7 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { ref, push, set, get, query, orderByChild, equalTo, DataSnapshot } from 'firebase/database';
+import { ref, push, set, get, query, orderByChild } from 'firebase/database';
 import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
@@ -34,15 +34,17 @@ export async function addTransaction(
     }
 
     try {
-        const transactionsRef = ref(db, `transactions/${transaction.userId}`);
+        const { userId, ...transactionData } = transaction;
+        const transactionsRef = ref(db, `transactions/${userId}`);
         const newTransactionRef = push(transactionsRef);
         
+        await set(newTransactionRef, transactionData);
+
         const newTransaction: Transaction = {
             id: newTransactionRef.key!,
-            ...transaction,
+            userId: userId,
+            ...transactionData,
         };
-
-        await set(newTransactionRef, transaction); // Save original transaction without the id
 
         return { success: true, transaction: newTransaction };
     } catch (error: any) {
@@ -66,6 +68,7 @@ export async function getTransactions(userId: string): Promise<Transaction[]> {
             snapshot.forEach((childSnapshot) => {
                 transactions.push({
                     id: childSnapshot.key!,
+                    userId: userId,
                     ...childSnapshot.val()
                 });
             });
