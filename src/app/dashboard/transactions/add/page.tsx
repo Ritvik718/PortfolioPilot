@@ -36,7 +36,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
-import { useTransaction } from '@/context/transaction-context';
+import { addTransaction } from '@/app/actions';
+import { auth } from '@/lib/firebase';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 
 const addTransactionSchema = z.object({
@@ -52,7 +54,7 @@ type AddTransactionFormValues = z.infer<typeof addTransactionSchema>;
 export default function AddTransactionPage() {
   const { toast } = useToast();
   const router = useRouter();
-  const { addTransaction } = useTransaction();
+  const [user] = useAuthState(auth);
 
   const form = useForm<AddTransactionFormValues>({
     resolver: zodResolver(addTransactionSchema),
@@ -66,22 +68,38 @@ export default function AddTransactionPage() {
   });
 
   const onSubmit = async (data: AddTransactionFormValues) => {
-    addTransaction({
-        id: new Date().toISOString(),
-        userId: '1', // placeholder
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'You must be logged in to add a transaction.',
+        });
+        return;
+    }
+    
+    const result = await addTransaction({
+        userId: user.uid,
         assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
         assetName: data.assetName,
         type: data.type,
         quantity: data.quantity,
         pricePerUnit: data.pricePerUnit,
-        date: data.date.toISOString(),
         totalValue: data.quantity * data.pricePerUnit,
     });
-    toast({
-      title: 'Transaction Added',
-      description: `Successfully added ${data.quantity} of ${data.assetName}.`,
-    });
-    router.push('/dashboard');
+
+    if (result.success) {
+        toast({
+        title: 'Transaction Added',
+        description: `Successfully added ${data.quantity} of ${data.assetName}.`,
+        });
+        router.push('/dashboard');
+    } else {
+         toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: result.message || 'Failed to add transaction.',
+        });
+    }
   };
 
   return (

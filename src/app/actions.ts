@@ -1,12 +1,14 @@
 'use server';
 
 import { portfolioQA } from '@/ai/flows/portfolio-qa';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { Transaction } from '@/lib/data';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -23,6 +25,19 @@ export async function askQuestion(question: string, portfolioData: any) {
     };
   }
 }
+
+export async function addTransaction(transaction: Omit<Transaction, 'id' | 'date'> & { userId: string }) {
+    try {
+        await addDoc(collection(db, 'transactions'), {
+            ...transaction,
+            date: serverTimestamp(),
+        });
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
 
 export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string;
