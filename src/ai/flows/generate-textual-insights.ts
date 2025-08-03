@@ -10,12 +10,12 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const GenerateTextualInsightsInputSchema = z.object({
+const GenerateTextualInsightsInputSchema = z.object({
     calculatedInsights: z.string().describe("A JSON string of calculated portfolio metrics, including total value, gains, losses, best performers, and asset allocation."),
 });
 export type GenerateTextualInsightsInput = z.infer<typeof GenerateTextualInsightsInputSchema>;
 
-export const GenerateTextualInsightsOutputSchema = z.object({
+const GenerateTextualInsightsOutputSchema = z.object({
   insights: z.array(z.string()).describe("3-5 concise, data-driven insights about the portfolio's strengths and weaknesses."),
   forecast: z.string().describe("A brief, one-paragraph forecast of the portfolio's potential future performance based on the provided data."),
 });
