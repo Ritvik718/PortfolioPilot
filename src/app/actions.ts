@@ -57,10 +57,10 @@ export async function login(prevState: any, formData: FormData) {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
+    return { message: 'Login successful' };
   } catch (error: any) {
     return { message: error.message };
   }
-  redirect('/dashboard');
 }
 
 export async function register(prevState: any, formData: FormData) {
