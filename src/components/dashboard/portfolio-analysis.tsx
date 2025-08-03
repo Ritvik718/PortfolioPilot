@@ -6,19 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { getAIInsights } from '@/app/actions';
-import { Lightbulb, Sparkles, Loader2, ListTree, AreaChart, HelpCircle } from 'lucide-react';
+import { getParsedPortfolio } from '@/app/actions';
+import { Lightbulb, Sparkles, Loader2, HelpCircle } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import type { GenerateInsightsOutput } from '@/ai/ai-insights';
+import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../ui/accordion';
+import { calculateInsights, type CalculatedInsights } from '@/lib/calculations';
 
 type PortfolioAnalysisProps = {
-    onAnalysisComplete: (data: GenerateInsightsOutput) => void;
+    onAnalysisComplete: (data: ParsePortfolioOutput) => void;
 }
 
 export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps) {
   const [portfolioData, setPortfolioData] = React.useState('');
-  const [analysisResult, setAnalysisResult] = React.useState<GenerateInsightsOutput | null>(null);
+  const [analysisResult, setAnalysisResult] = React.useState<CalculatedInsights | null>(null);
   const [isPending, startTransition] = React.useTransition();
   const { toast } = useToast();
 
@@ -44,7 +45,7 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
     }
 
     startTransition(async () => {
-      const result = await getAIInsights({ portfolioData });
+      const result = await getParsedPortfolio({ portfolioData });
 
       if (result.error) {
         toast({
@@ -54,9 +55,10 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
         });
         setAnalysisResult(null);
       } else {
-        const structuredResult = result as GenerateInsightsOutput;
-        setAnalysisResult(structuredResult);
-        onAnalysisComplete(structuredResult);
+        const parsedData = result as ParsePortfolioOutput;
+        const calculated = calculateInsights(parsedData);
+        setAnalysisResult(calculated);
+        onAnalysisComplete(parsedData);
          toast({
           title: 'Analysis Complete',
           description: 'Your portfolio insights are ready.',
@@ -64,6 +66,19 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
       }
     });
   };
+  
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+  
+  const formatPercent = (value: number) => {
+      return `${value.toFixed(2)}%`;
+  }
 
   return (
     <Card className="flex flex-col">
@@ -107,35 +122,30 @@ export function PortfolioAnalysis({ onAnalysisComplete }: PortfolioAnalysisProps
         {analysisResult && (
             <div className="space-y-4 pt-4">
                 <Separator />
-                 <Accordion type="single" collapsible className="w-full">
+                 <Accordion type="single" collapsible className="w-full" defaultValue='item-1'>
                     <AccordionItem value="item-1">
                         <AccordionTrigger>
                             <h3 className="font-semibold flex items-center gap-2"><HelpCircle className="h-5 w-5 text-primary" /> Key Questions Answered</h3>
                         </AccordionTrigger>
                         <AccordionContent className="space-y-3 text-sm">
-                           <p><strong>Total Value:</strong> {analysisResult.totalValue}</p>
-                           <p><strong>Total Investment:</strong> {analysisResult.totalInvestment}</p>
-                           <p><strong>Overall Gain/Loss:</strong> {analysisResult.overallGainLoss}</p>
-                           <p><strong>Best Performer:</strong> {analysisResult.bestPerformer}</p>
-                           <p><strong>Biggest Winner:</strong> {analysisResult.biggestWinner}</p>
-                           <p><strong>Asset Allocation:</strong> {analysisResult.assetAllocation}</p>
-                           <p><strong>Underperforming Assets:</strong> {analysisResult.underperformingAssets}</p>
-                           <p><strong>10% Drop Simulation:</strong> {analysisResult.marketDropSimulation}</p>
+                           <p><strong>Total Value:</strong> {formatCurrency(analysisResult.totalValue)}</p>
+                           <p><strong>Total Investment:</strong> {formatCurrency(analysisResult.totalInvestment)}</p>
+                           <p><strong>Overall Gain/Loss:</strong> {formatCurrency(analysisResult.overallGainLossValue)} ({formatPercent(analysisResult.overallGainLossPercent)}%)</p>
+                           <p><strong>Best Performer:</strong> {analysisResult.bestPerformer.name} ({formatPercent(analysisResult.bestPerformer.returnPercentage)}%)</p>
+                           <p><strong>Biggest Winner:</strong> {analysisResult.biggestWinner.name} ({formatCurrency(analysisResult.biggestWinner.gain)})</p>
+                           <div>
+                                <strong>Asset Allocation:</strong>
+                                <ul className="list-disc pl-5">
+                                    {Object.entries(analysisResult.assetAllocation).map(([category, percentage]) => (
+                                        <li key={category}>{category}: {formatPercent(percentage)}%</li>
+                                    ))}
+                                </ul>
+                           </div>
+                           <p><strong>Underperforming Assets:</strong> {analysisResult.underperformingAssets.map(a => a.name).join(', ') || 'None'}</p>
+                           <p><strong>10% Drop Simulation:</strong> {formatCurrency(analysisResult.marketDropSimulation)}</p>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
-                <div>
-                    <h3 className="font-semibold flex items-center gap-2 mb-2"><ListTree className="h-5 w-5 text-primary" /> Key Insights</h3>
-                    <ul className="space-y-2 list-disc pl-5 text-sm text-muted-foreground">
-                        {analysisResult.insights.map((insight, index) => (
-                            <li key={index}>{insight}</li>
-                        ))}
-                    </ul>
-                </div>
-                 <div>
-                    <h3 className="font-semibold flex items-center gap-2 mb-2"><AreaChart className="h-5 w-5 text-primary" /> Forecast</h3>
-                    <p className="text-sm text-muted-foreground">{analysisResult.forecast}</p>
-                </div>
             </div>
         )}
 

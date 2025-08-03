@@ -1,7 +1,7 @@
 
 'use server';
 
-import { generateInsights, GenerateInsightsInput, GenerateInsightsOutput } from '@/ai/ai-insights';
+import { parsePortfolio, ParsePortfolioInput, ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { portfolioQA, PortfolioQAInput, PortfolioQAOutput } from '@/ai/flows/portfolio-qa';
 import { auth, db } from '@/lib/firebase';
 import {
@@ -11,9 +11,9 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
-export async function getAIInsights(input: GenerateInsightsInput): Promise<GenerateInsightsOutput | { error: string }> {
+export async function getParsedPortfolio(input: ParsePortfolioInput): Promise<ParsePortfolioOutput | { error: string }> {
   try {
-    const result = await generateInsights(input);
+    const result = await parsePortfolio(input);
     return result;
   } catch (error) {
     console.error('Error calling AI flow:', error);

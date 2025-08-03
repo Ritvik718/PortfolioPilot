@@ -12,7 +12,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { MarketOverview } from './market-overview';
 import { MarketNewsFeed } from './market-news';
-import type { GenerateInsightsOutput } from '@/ai/ai-insights';
+import type { ParsePortfolioOutput } from '@/ai/flows/parse-portfolio';
 import { Card, CardContent } from '../ui/card';
 import { Sparkles } from 'lucide-react';
 import { PortfolioChat } from './portfolio-chat';
@@ -25,16 +25,13 @@ type DashboardClientPageProps = {
 
 function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initialPortfolioData: PortfolioData | null, marketData: StockQuote[], marketNews: MarketNews[] }) {
     const [user, userLoading] = useAuthState(auth);
-    const [userPortfolioData, setUserPortfolioData] = React.useState<GenerateInsightsOutput | null>(null);
+    const [userPortfolioData, setUserPortfolioData] = React.useState<ParsePortfolioOutput | null>(null);
 
-    const handleAnalysisComplete = (data: GenerateInsightsOutput) => {
+    const handleAnalysisComplete = (data: ParsePortfolioOutput) => {
         setUserPortfolioData(data);
     };
 
-    const portfolioToDisplay = userPortfolioData ? {
-        ...userPortfolioData,
-        assets: userPortfolioData.assets.map(asset => ({ ...asset, id: asset.symbol, icon: '' }))
-    } : initialPortfolioData;
+    const portfolioHasData = userPortfolioData && userPortfolioData.assets.length > 0;
     
     const isLoading = userLoading;
 
@@ -67,7 +64,7 @@ function MainDashboard({ initialPortfolioData, marketData, marketNews }: { initi
             
             <div className="grid gap-6 grid-cols-1 xl:grid-cols-2">
                  <div className="flex flex-col gap-6">
-                    {portfolioToDisplay && portfolioToDisplay.totalValue > 0 ? (
+                    {portfolioHasData ? (
                         <Card className="h-full flex flex-col items-center justify-center text-center p-8">
                             <CardContent>
                                 <Sparkles className="h-12 w-12 text-primary mx-auto mb-4" />
