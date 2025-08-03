@@ -1,3 +1,4 @@
+
 import type { PortfolioData, Asset } from './data';
 import fetch from 'node-fetch';
 
@@ -79,7 +80,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                 
                 if (!response.ok) {
                     console.error(`Finnhub API request failed for ${asset.symbol} with status ${response.status}. Skipping this asset.`);
-                    return null; // Skip this asset if API call fails
+                    return null;
                 }
 
                 const data = await response.json() as any;
