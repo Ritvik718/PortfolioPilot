@@ -86,8 +86,16 @@ export default function HomePage() {
              <motion.div
                 className="relative mt-20"
                 initial={{ opacity: 0, y: 50, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.6, ease: "anticipate" }}
+                animate={{ 
+                    opacity: 1, 
+                    y: ["0%", "-2%", "0%"], 
+                    scale: 1 
+                }}
+                transition={{ 
+                    opacity: { duration: 0.8, delay: 0.6, ease: "anticipate" },
+                    y: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+                    scale: { duration: 0.8, delay: 0.6, ease: "anticipate" }
+                }}
             >
                 <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[150%] h-2/3 bg-primary/20 blur-3xl" />
                 <div className="max-w-3xl mx-auto p-1 rounded-2xl bg-white/10 backdrop-blur-md shadow-2xl shadow-primary/10 border border-white/10">
