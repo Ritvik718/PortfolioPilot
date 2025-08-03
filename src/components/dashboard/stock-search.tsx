@@ -65,17 +65,14 @@ export function StockSearch() {
     <>
       <div className="relative">
         <Command className="overflow-visible bg-transparent">
-          <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
-            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
             <CommandInput
               placeholder="Search stocks..."
               value={query}
               onValueChange={setQuery}
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
-              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
             />
-          </div>
           {isDropdownOpen && (
             <CommandList className="absolute top-full mt-2 w-full sm:w-64 rounded-md border bg-background shadow-lg z-50">
               {isLoading && <CommandItem disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" />Searching...</CommandItem>}
