@@ -3,7 +3,6 @@
 
 import * as React from 'react';
 import { Search, Loader2 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import {
   Command,
   CommandEmpty,
@@ -28,6 +27,7 @@ export function StockSearch() {
   React.useEffect(() => {
     if (debouncedQuery) {
       setIsLoading(true);
+      setDropdownOpen(true);
       searchStocksAction(debouncedQuery).then((res) => {
         if (!('error' in res)) {
           setResults(res);
@@ -38,6 +38,7 @@ export function StockSearch() {
       });
     } else {
       setResults([]);
+      setDropdownOpen(false);
     }
   }, [debouncedQuery]);
 
@@ -47,35 +48,53 @@ export function StockSearch() {
     setDropdownOpen(false);
   };
 
+  const handleInputFocus = () => {
+    if (results.length > 0) {
+      setDropdownOpen(true);
+    }
+  };
+  
+  const handleInputBlur = () => {
+    // Delay hiding the dropdown to allow click events to register
+    setTimeout(() => {
+      setDropdownOpen(false);
+    }, 150);
+  };
+
   return (
     <>
       <div className="relative">
-        <Command className="overflow-visible">
-          <CommandInput
-            placeholder="Search stocks..."
-            value={query}
-            onValueChange={setQuery}
-            onFocus={() => setDropdownOpen(true)}
-            onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
-            className="w-full sm:w-64"
-          />
-          <CommandList className={`absolute top-full mt-2 w-full sm:w-64 rounded-md border bg-background shadow-lg z-50 ${isDropdownOpen && (query || results.length > 0) ? 'block' : 'hidden'}`}>
-            {isLoading && <CommandItem disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" />Searching...</CommandItem>}
-            {!isLoading && results.length === 0 && query && <CommandEmpty>No results found.</CommandEmpty>}
-            <CommandGroup>
-              {results.map((result) => (
-                <CommandItem
-                  key={result.symbol}
-                  value={result.symbol}
-                  onSelect={() => handleSelect(result.symbol)}
-                  className="cursor-pointer"
-                >
-                  <span className="font-semibold">{result.symbol}</span>
-                  <span className="ml-2 text-muted-foreground truncate">{result.description}</span>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
+        <Command className="overflow-visible bg-transparent">
+          <div className="flex items-center border-b px-3" cmdk-input-wrapper="">
+            <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+            <CommandInput
+              placeholder="Search stocks..."
+              value={query}
+              onValueChange={setQuery}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
+              className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+            />
+          </div>
+          {isDropdownOpen && (
+            <CommandList className="absolute top-full mt-2 w-full sm:w-64 rounded-md border bg-background shadow-lg z-50">
+              {isLoading && <CommandItem disabled><Loader2 className="mr-2 h-4 w-4 animate-spin" />Searching...</CommandItem>}
+              {!isLoading && results.length === 0 && query && <CommandEmpty>No results found.</CommandEmpty>}
+              <CommandGroup>
+                {results.map((result) => (
+                  <CommandItem
+                    key={result.symbol}
+                    value={result.symbol}
+                    onSelect={() => handleSelect(result.symbol)}
+                    className="cursor-pointer"
+                  >
+                    <span className="font-semibold">{result.symbol}</span>
+                    <span className="ml-2 text-muted-foreground truncate">{result.description}</span>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          )}
         </Command>
       </div>
       {selectedSymbol && (
