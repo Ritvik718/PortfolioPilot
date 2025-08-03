@@ -34,19 +34,19 @@ export function DashboardHeader() {
                     <Link href="#" className="flex items-center gap-2 text-lg font-semibold mb-4">
                         <Logo />
                     </Link>
-                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground">
+                    <Link href="/dashboard" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground">
                         <LayoutDashboard className="h-5 w-5" />
                         Dashboard
                     </Link>
-                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                    <Link href="/dashboard/assets" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
                         <Wallet className="h-5 w-5" />
                         Assets
                     </Link>
-                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                    <Link href="/dashboard/reports" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
                         <BarChart2 className="h-5 w-5" />
                         Reports
                     </Link>
-                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                    <Link href="/dashboard/settings" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
                         <Settings className="h-5 w-5" />
                         Settings
                     </Link>
@@ -58,9 +58,11 @@ export function DashboardHeader() {
             <div className="ml-auto flex-1 sm:flex-initial">
               {/* Future search bar can go here */}
             </div>
-             <Button variant="outline" size="sm">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Add Transaction
+             <Button asChild variant="outline" size="sm">
+                <Link href="/dashboard/transactions/add">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Transaction
+                </Link>
             </Button>
             <Button variant="default" size="sm" onClick={handleExport}>
                 <FileDown className="mr-2 h-4 w-4" />

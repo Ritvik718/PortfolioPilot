@@ -38,19 +38,19 @@ export default function DashboardLayout({
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" tooltip="Assets">
+              <SidebarMenuButton href="/dashboard/assets" tooltip="Assets">
                 <Wallet />
                 <span>Assets</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" tooltip="Reports">
+              <SidebarMenuButton href="/dashboard/reports" tooltip="Reports">
                 <BarChart2 />
                 <span>Reports</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" tooltip="Settings">
+              <SidebarMenuButton href="/dashboard/settings" tooltip="Settings">
                 <Settings />
                 <span>Settings</span>
               </SidebarMenuButton>
