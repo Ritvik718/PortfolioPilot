@@ -12,8 +12,8 @@ export function OverviewCards({ data }: OverviewCardsProps) {
 
   const topPerformer = [...data.assets].sort(
     (a, b) =>
-      b.change24h / (b.price - b.change24h) -
-      a.change24h / (a.price - a.change24h)
+      b.change24h / (b.value - b.change24h) -
+      a.change24h / (a.value - a.change24h)
   )[0];
 
   const formatCurrency = (value: number) => {
@@ -25,7 +25,7 @@ export function OverviewCards({ data }: OverviewCardsProps) {
     }).format(value);
   };
 
-  const topPerformerChange = topPerformer.price - topPerformer.change24h;
+  const topPerformerChange = topPerformer.value - topPerformer.change24h;
   const topPerformerChangePercentage =
     topPerformerChange === 0
       ? 0

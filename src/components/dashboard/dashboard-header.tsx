@@ -1,8 +1,18 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { FileDown, PlusCircle } from 'lucide-react';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  LayoutDashboard,
+  Wallet,
+  Settings,
+  BarChart2,
+  PanelLeft,
+  PlusCircle,
+  FileDown,
+} from 'lucide-react';
+import { Logo } from '../logo';
+import Link from 'next/link';
 
 export function DashboardHeader() {
   const handleExport = () => {
@@ -11,21 +21,52 @@ export function DashboardHeader() {
   };
 
   return (
-    <header className="flex items-center justify-between p-4 border-b bg-card/50">
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="md:hidden" />
-        <h1 className="text-2xl font-headline font-semibold">Dashboard</h1>
-      </div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Transaction
-        </Button>
-        <Button variant="default" size="sm" onClick={handleExport}>
-          <FileDown className="mr-2 h-4 w-4" />
-          Export
-        </Button>
-      </div>
+    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 md:px-6">
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="shrink-0 md:hidden">
+                    <PanelLeft className="h-5 w-5" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="flex flex-col">
+                <nav className="grid gap-2 text-lg font-medium">
+                    <Link href="#" className="flex items-center gap-2 text-lg font-semibold mb-4">
+                        <Logo />
+                    </Link>
+                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl bg-muted px-3 py-2 text-foreground hover:text-foreground">
+                        <LayoutDashboard className="h-5 w-5" />
+                        Dashboard
+                    </Link>
+                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <Wallet className="h-5 w-5" />
+                        Assets
+                    </Link>
+                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <BarChart2 className="h-5 w-5" />
+                        Reports
+                    </Link>
+                    <Link href="#" className="mx-[-0.65rem] flex items-center gap-4 rounded-xl px-3 py-2 text-muted-foreground hover:text-foreground">
+                        <Settings className="h-5 w-5" />
+                        Settings
+                    </Link>
+                </nav>
+            </SheetContent>
+        </Sheet>
+        <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
+            <h1 className="text-2xl font-headline font-semibold hidden md:block">Dashboard</h1>
+            <div className="ml-auto flex-1 sm:flex-initial">
+              {/* Future search bar can go here */}
+            </div>
+             <Button variant="outline" size="sm">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Add Transaction
+            </Button>
+            <Button variant="default" size="sm" onClick={handleExport}>
+                <FileDown className="mr-2 h-4 w-4" />
+                Export
+            </Button>
+        </div>
     </header>
   );
 }

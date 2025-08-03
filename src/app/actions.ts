@@ -15,3 +15,15 @@ export async function askQuestion(question: string, portfolioData: any) {
     return { error: 'Sorry, I encountered an error while processing your request.' };
   }
 }
+
+export async function login(data: any) {
+    console.log('Login attempt:', data);
+    // TODO: Implement actual login logic
+    return { success: true, message: 'Logged in successfully!' };
+}
+
+export async function register(data: any) {
+    console.log('Register attempt:', data);
+    // TODO: Implement actual registration logic
+    return { success: true, message: 'Registered successfully!' };
+}

@@ -78,7 +78,7 @@ export function AssetList({ assets }: AssetListProps) {
                     {asset.change24h >= 0 ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                     <span>
                       {(
-                        (asset.change24h / (asset.price - asset.change24h)) *
+                        (asset.change24h / (asset.value - asset.change24h)) *
                         100
                       ).toFixed(2)}
                       %
