@@ -68,9 +68,9 @@ const getStockDetailsFlow = ai.defineFlow(
   },
   async ({ symbol }) => {
     const [profile, recommendations, financials] = await Promise.all([
-      getCompanyProfileTool(symbol),
-      getRecommendationsTool(symbol),
-      getFinancialsTool(symbol),
+      getCompanyProfileTool({symbol}),
+      getRecommendationsTool({symbol}),
+      getFinancialsTool({symbol}),
     ]);
 
     return {
