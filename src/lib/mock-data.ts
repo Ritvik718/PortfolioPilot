@@ -1,4 +1,3 @@
-
 import type { PortfolioData, Asset } from './data';
 import fetch from 'node-fetch';
 
@@ -94,28 +93,35 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                     };
                 }
 
-                const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
-                const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
-                
-                if (!response.ok) {
-                    console.error(`Failed to fetch data for ${asset.symbol}`);
+                try {
+                    const symbol = asset.category === 'Crypto' ? `BINANCE:${asset.symbol}USDT` : asset.symbol;
+                    const response = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${apiKey}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`Finnhub API request failed with status ${response.status}`);
+                    }
+
+                    const data = await response.json() as any;
+                    
+                    if (!data || typeof data.c === 'undefined') {
+                       throw new Error('Invalid data format received from Finnhub');
+                    }
+                    
+                    const price = data.c;
+                    const change24h = data.d;
+
+                    return {
+                        ...asset,
+                        price: price,
+                        change24h: change24h,
+                        value: asset.holdings * price,
+                    };
+                } catch (assetError) {
+                    console.error(`Failed to fetch data for ${asset.symbol}:`, assetError);
                     // Fallback to mock for this specific asset
                     const mockAsset = getMockPortfolioData().assets.find(a => a.id === asset.id)!;
                     return mockAsset;
                 }
-
-                const data = await response.json() as any;
-                
-                // Finnhub API returns c: current price, d: change, dp: percent change
-                const price = data.c;
-                const change24h = data.d;
-
-                return {
-                    ...asset,
-                    price: price,
-                    change24h: change24h,
-                    value: asset.holdings * price,
-                };
             })
         );
         
@@ -139,7 +145,7 @@ export async function getPortfolioData(): Promise<PortfolioData> {
         };
 
     } catch (error) {
-        console.error("Error fetching real-time data, falling back to mock data.", error);
+        console.error("Error fetching real-time portfolio data, falling back to mock data.", error);
         return getMockPortfolioData();
     }
 }
