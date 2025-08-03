@@ -29,6 +29,26 @@ const itemVariants = {
   },
 };
 
+const floatingItemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+        y: ["0%", "-1.5%", "0%"],
+        opacity: 1,
+        transition: {
+            y: {
+                duration: 5,
+                repeat: Infinity,
+                ease: 'easeInOut'
+            },
+            opacity: {
+                duration: 0.6,
+                ease: 'easeOut'
+            }
+        }
+    }
+}
+
+
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
@@ -66,13 +86,13 @@ export default function HomePage() {
               <div className="space-y-4">
                  <motion.h1 
                   className="text-4xl font-bold font-headline tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none"
-                  variants={itemVariants}
+                  variants={floatingItemVariants}
                 >
                   AI-Powered Portfolio Tracking
                 </motion.h1>
                 <motion.p 
                   className="mx-auto max-w-[700px] text-muted-foreground md:text-xl"
-                  variants={itemVariants}
+                  variants={floatingItemVariants}
                 >
                   Unlock deep insights, analyze your assets, and chat with an AI that understands your financial data.
                 </motion.p>
