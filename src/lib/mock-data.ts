@@ -78,8 +78,8 @@ export async function getPortfolioData(): Promise<PortfolioData> {
     const apiKey = process.env.FINANCIAL_DATA_API_KEY;
     const mockPortfolio = getMockPortfolioData();
 
-    if (!apiKey) {
-        console.warn("Finnhub API key not found. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
+    if (!apiKey || apiKey === 'd27jhf1r01qloarjcgjgd27jhf1r01qloarjcgk0_placeholder_invalid') {
+        console.warn("Finnhub API key not found or is placeholder. Using mock data. Please add your FINANCIAL_DATA_API_KEY to the .env file.");
         return mockPortfolio;
     }
 
@@ -141,8 +141,8 @@ export async function getPortfolioData(): Promise<PortfolioData> {
                 '1D': generatePerformanceData(24, totalValue24hAgo, 0.002),
                 '7D': generatePerformanceData(7, totalValue - (change24h * 7), 0.01),
                 '30D': generatePerformanceData(30, totalValue - (change24h * 30), 0.015),
-                'YTD': generatePerformanceData(new Date().getMonth() + 1, 425000, 0.02),
-                '1Y': generatePerformanceData(12, 320000, 0.025),
+                'YTD': generatePerformanceData(new Date().getMonth() + 1, totalValue * 0.95, 0.02),
+                '1Y': generatePerformanceData(12, totalValue * 0.8, 0.025),
             },
         };
 
