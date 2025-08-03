@@ -5,20 +5,15 @@ import type { Transaction } from '@/lib/data';
 
 interface TransactionContextType {
   transactions: Transaction[];
-  addTransaction: (transaction: Transaction) => void;
 }
 
 const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
-export function TransactionProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  const addTransaction = (transaction: Transaction) => {
-    setTransactions((prevTransactions) => [...prevTransactions, transaction]);
-  };
+export function TransactionProvider({ children, initialTransactions = [] }: { children: ReactNode, initialTransactions?: Transaction[] }) {
+  const [transactions] = useState<Transaction[]>(initialTransactions);
 
   return (
-    <TransactionContext.Provider value={{ transactions, addTransaction }}>
+    <TransactionContext.Provider value={{ transactions }}>
       {children}
     </TransactionContext.Provider>
   );

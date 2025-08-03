@@ -7,8 +7,9 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { Transaction } from '@/lib/data';
+import { getCurrentUser } from '@/lib/auth';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -26,25 +27,45 @@ export async function askQuestion(question: string, portfolioData: any) {
   }
 }
 
-export async function addTransaction(transaction: Omit<Transaction, 'id' | 'date'> & { userId: string }) {
+export async function addTransaction(transaction: Omit<Transaction, 'id' | 'date' | 'userId'>) {
+    const user = await getCurrentUser();
+    if (!user) {
+        return { success: false, message: "Authentication required." };
+    }
+
     try {
         const docRef = await addDoc(collection(db, 'transactions'), {
             ...transaction,
+            userId: user.uid,
             date: serverTimestamp(),
         });
-
-        // Fetch the document to get the server-generated timestamp
-        const newDoc = await getDoc(docRef);
-        const newTransaction = {
-          id: newDoc.id,
-          ...newDoc.data(),
-           // Convert Firestore Timestamp to JS Date string
-          date: newDoc.data()?.date.toDate().toISOString(),
-        } as Transaction;
-
-        return { success: true, transaction: newTransaction };
+        return { success: true, id: docRef.id };
     } catch (error: any) {
         return { success: false, message: error.message };
+    }
+}
+
+export async function getTransactions(): Promise<Transaction[]> {
+    const user = await getCurrentUser();
+    if (!user) {
+        return [];
+    }
+
+    try {
+        const q = query(collection(db, 'transactions'), where('userId', '==', user.uid), orderBy('date', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const transactions = querySnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                date: data.date.toDate().toISOString(),
+            } as Transaction;
+        });
+        return transactions;
+    } catch (error) {
+        console.error("Error fetching transactions: ", error);
+        return [];
     }
 }
 

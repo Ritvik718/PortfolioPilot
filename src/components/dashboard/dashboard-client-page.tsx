@@ -5,42 +5,39 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DashboardHeader } from '@/components/dashboard/dashboard-header';
 import { PlusCircle } from 'lucide-react';
-import { useTransaction } from '@/context/transaction-context';
 import { OverviewCards } from '@/components/dashboard/overview-cards';
 import { PerformanceChart } from '@/components/dashboard/performance-chart';
 import { AssetList } from '@/components/dashboard/asset-list';
 import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
-import type { PortfolioData } from '@/lib/data';
+import type { PortfolioData, Transaction } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { TransactionList } from '@/components/dashboard/transaction-list';
+import { TransactionProvider } from '@/context/transaction-context';
+
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
+    initialTransactions: Transaction[];
 };
 
-export function DashboardClientPage({ portfolioData: initialData }: DashboardClientPageProps) {
-    const { transactions } = useTransaction();
-    const [portfolioData, setPortfolioData] = React.useState<PortfolioData | null>(initialData);
-    const [isLoading, setIsLoading] = React.useState(!initialData);
-
+export function DashboardClientPage({ portfolioData, initialTransactions }: DashboardClientPageProps) {
+    const [isLoading, setIsLoading] = React.useState(!portfolioData);
+    
     // This effect could be used for client-side re-fetching if needed in the future
     // For now, we rely on the server-fetched initialData
     React.useEffect(() => {
-        if (!initialData) {
+        if (!portfolioData) {
             setIsLoading(true);
-            // Example of how you might re-fetch on the client
-            // getPortfolioData().then(data => {
-            //     setPortfolioData(data);
-            //     setIsLoading(false);
-            // });
+        } else {
+            setIsLoading(false);
         }
-    }, [initialData]);
+    }, [portfolioData]);
 
-    const hasTransactions = transactions.length > 0;
+    const hasTransactions = initialTransactions.length > 0;
     const hasPortfolioData = portfolioData && portfolioData.assets.length > 0;
 
   return (
-    <>
+    <TransactionProvider initialTransactions={initialTransactions}>
       <DashboardHeader />
       <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6">
         {isLoading ? (
@@ -73,7 +70,7 @@ export function DashboardClientPage({ portfolioData: initialData }: DashboardCli
               </div>
                <div className="grid gap-6 grid-cols-1 xl:grid-cols-3">
                   <div className="xl:col-span-2">
-                      <TransactionList transactions={transactions} />
+                      <TransactionList transactions={initialTransactions} />
                   </div>
                   <div className="flex flex-col gap-6">
                       <AIChatWidget portfolioData={portfolioData} />
@@ -98,6 +95,6 @@ export function DashboardClientPage({ portfolioData: initialData }: DashboardCli
             </div>
         )}
       </div>
-    </>
+    </TransactionProvider>
   );
 }
