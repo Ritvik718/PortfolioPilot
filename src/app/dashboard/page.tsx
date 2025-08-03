@@ -13,6 +13,7 @@ import { AIChatWidget } from '@/components/dashboard/ai-chat-widget';
 import React from 'react';
 import type { PortfolioData } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { TransactionList } from '@/components/dashboard/transaction-list';
 
 export default function DashboardPage() {
     const { transactions } = useTransaction();
