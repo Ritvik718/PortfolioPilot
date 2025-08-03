@@ -34,13 +34,6 @@ const GenerateInsightsOutputSchema = z.object({
     value: z.number().describe("The current total market value of the asset holding."),
     change24h: z.number().describe("The change in the asset's value over the last 24 hours."),
   })).describe("An array of the top 5 assets in the portfolio."),
-  performanceHistory: z.object({
-      '1D': z.array(z.object({ date: z.string(), value: z.number() })).describe("Performance data for the last day."),
-      '7D': z.array(z.object({ date: z.string(), value: z.number() })).describe("Performance data for the last 7 days."),
-      '30D': z.array(z.object({ date: z.string(), value: z.number() })).describe("Performance data for the last 30 days."),
-      'YTD': z.array(z.object({ date: z.string(), value: z.number() })).describe("Performance data for the year to date."),
-      '1Y': z.array(z.object({ date: z.string(), value: z.number() })).describe("Performance data for the last year."),
-  }).describe("The historical performance of the portfolio over various timeframes."),
 });
 export type GenerateInsightsOutput = z.infer<typeof GenerateInsightsOutputSchema>;
 
@@ -53,19 +46,21 @@ const prompt = ai.definePrompt({
   name: 'generateInsightsPrompt',
   input: {schema: GenerateInsightsInputSchema},
   output: {schema: GenerateInsightsOutputSchema},
-  prompt: `You are an AI-powered financial analyst. Your task is to provide insights, forecasts, and structured data based on a user's uploaded portfolio data. The data is provided as a single string.
+  config: {
+    temperature: 0,
+  },
+  prompt: `You are an AI-powered financial data processor. Your task is to extract and calculate structured data based on a user's uploaded portfolio data. The data is provided as a single string. Do not invent or generate any data not present in the input.
 
 Portfolio Data:
 {{{portfolioData}}}
 
 Instructions:
-1.  Analyze the portfolio data to identify key assets, trends, strengths, and weaknesses.
+1.  Analyze the portfolio data to identify key assets.
 2.  Calculate the total portfolio value, 24-hour change (in currency and percentage), and identify the top 5 assets by value.
-3.  Generate synthetic but realistic historical performance data for the portfolio over 1D, 7D, 30D, YTD, and 1Y timeframes. The most recent data point should match the calculated total value.
-4.  Generate 3-5 concise and informative insights about the portfolio's composition, performance, and potential risks.
-5.  Provide a brief forecast of the portfolio's future performance based on its composition and general market conditions.
-6.  Ensure all textual insights are easy to understand for a non-expert user and do not include bullet points.
-7.  Return all calculated figures and generated text in the specified structured output format.`,
+3.  Generate 3-5 concise and informative insights about the portfolio's composition, performance, and potential risks based *only* on the provided data.
+4.  Provide a brief forecast of the portfolio's future performance based on its composition and general market conditions.
+5.  Ensure all textual insights are easy to understand for a non-expert user and do not include bullet points.
+6.  Return all calculated figures and generated text in the specified structured output format.`,
 });
 
 const generateInsightsFlow = ai.defineFlow(
@@ -76,7 +71,26 @@ const generateInsightsFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return output!;
+    
+    if (!output) {
+      throw new Error("AI failed to generate insights.");
+    }
+    
+    // Fallback for assets array
+    const assets = output.assets ?? [];
+
+    // Basic fallback for performance history if it's ever re-introduced
+    const fallbackHistory = {
+        '1D': [{ date: 'Today', value: output.totalValue ?? 0 }],
+        '7D': [],
+        '30D': [],
+        'YTD': [],
+        '1Y': [],
+    };
+    
+    return {
+        ...output,
+        assets,
+    };
   }
 );
-
