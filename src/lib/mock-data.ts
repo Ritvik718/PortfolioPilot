@@ -40,7 +40,7 @@ const change24h = assets.reduce((sum, asset) => sum + asset.change24h * asset.ho
 const totalValue24hAgo = totalValue - change24h;
 const change24hPercentage = totalValue24hAgo === 0 ? 0 : (change24h / totalValue24hAgo) * 100;
 
-export const mockPortfolioData: PortfolioData = {
+const mockPortfolioData: PortfolioData = {
     totalValue,
     change24h,
     change24hPercentage,
@@ -53,3 +53,12 @@ export const mockPortfolioData: PortfolioData = {
         '1Y': generatePerformanceData(12, 320000, 0.025),
     },
 };
+
+// Simulate an API call
+export async function getPortfolioData(): Promise<PortfolioData> {
+    return new Promise(resolve => {
+        setTimeout(() => {
+            resolve(mockPortfolioData);
+        }, 1000); // Simulate a 1-second network delay
+    });
+}
