@@ -15,7 +15,8 @@ import { TransactionList } from '@/components/dashboard/transaction-list';
 import { TransactionProvider, useTransaction } from '@/context/transaction-context';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { getTransactions } from '@/app/actions';
+import { getTransactions } from '@/lib/transactions';
+import { useToast } from '@/hooks/use-toast';
 
 type DashboardClientPageProps = {
     portfolioData: PortfolioData | null;
@@ -25,20 +26,28 @@ type DashboardClientPageProps = {
 function MainDashboard({ portfolioData }: { portfolioData: PortfolioData | null }) {
     const [user, userLoading] = useAuthState(auth);
     const { transactions, setTransactions, isLoading: transactionsLoading, setIsLoading: setTransactionsLoading } = useTransaction();
+    const { toast } = useToast();
 
     useEffect(() => {
         if (user && !userLoading) {
             setTransactionsLoading(true);
             getTransactions(user.uid)
                 .then(setTransactions)
-                .catch(console.error)
+                .catch((error) => {
+                    console.error("Failed to fetch transactions:", error)
+                    toast({
+                        variant: 'destructive',
+                        title: 'Error fetching data',
+                        description: 'Could not load your transactions. Please check your connection and try again.'
+                    })
+                })
                 .finally(() => setTransactionsLoading(false));
         } else if (!user && !userLoading) {
             // Handle case where user is logged out
             setTransactions([]);
             setTransactionsLoading(false);
         }
-    }, [user, userLoading, setTransactions, setTransactionsLoading]);
+    }, [user, userLoading, setTransactions, setTransactionsLoading, toast]);
     
     const isLoading = !portfolioData || userLoading;
 

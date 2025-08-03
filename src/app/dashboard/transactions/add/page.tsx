@@ -79,7 +79,6 @@ export default function AddTransactionPage() {
 
     try {
         const result = await addTransaction({
-            userId: user.uid,
             assetId: data.assetName.toLowerCase().replace(/\s/g, '-'), // placeholder
             assetName: data.assetName,
             type: data.type,

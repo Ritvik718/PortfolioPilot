@@ -7,8 +7,7 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { ref, set, get, query, orderByChild } from 'firebase/database';
-import { Transaction } from '@/lib/data';
+import { ref, set, get } from 'firebase/database';
 
 export async function askQuestion(question: string, portfolioData: any) {
   try {
@@ -25,35 +24,6 @@ export async function askQuestion(question: string, portfolioData: any) {
     };
   }
 }
-
-export async function getTransactions(userId: string): Promise<Transaction[]> {
-    if (!userId) {
-        return [];
-    }
-
-    try {
-        const transactionsRef = ref(db, `transactions/${userId}`);
-        const snapshot = await get(query(transactionsRef, orderByChild('date')));
-        
-        if (snapshot.exists()) {
-            const transactions: Transaction[] = [];
-            snapshot.forEach((childSnapshot) => {
-                transactions.push({
-                    id: childSnapshot.key!,
-                    userId: userId,
-                    ...childSnapshot.val()
-                });
-            });
-            // RTDB returns in ascending order, so we reverse for descending date order
-            return transactions.reverse();
-        }
-        return [];
-    } catch (error) {
-        console.error("Error fetching transactions: ", error);
-        return [];
-    }
-}
-
 
 export async function login(prevState: any, formData: FormData) {
   const email = formData.get('email') as string;
